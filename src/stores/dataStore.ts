@@ -13,6 +13,7 @@ import {
   seedTurnos,
 } from '../data/seed';
 import { API_ENABLED, apiErrorMessage } from '../api/httpClient';
+import { actividadesService } from '../api/actividades.service';
 import { planesService } from '../api/planes.service';
 import { profesoresService } from '../api/profesores.service';
 import { sociosService } from '../api/socios.service';
@@ -67,6 +68,7 @@ const remotes: Partial<Record<CollectionKey, Remote>> = {
   planes: planesService as unknown as Remote,
   socios: sociosService as unknown as Remote,
   profesores: profesoresService as unknown as Remote,
+  actividades: actividadesService as unknown as Remote,
 };
 
 /** Bloqueos de integridad referencial: espejo de las restricciones del backend. */
@@ -129,12 +131,19 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (!API_ENABLED) return {};
     set({ loading: true });
     try {
-      const [planes, socios, profesores] = await Promise.all([
+      const [planes, socios, profesores, actividades] = await Promise.all([
         planesService.list(),
         sociosService.list(),
         profesoresService.list(),
+        actividadesService.list(),
       ]);
-      set({ planes, socios, profesores, loading: false });
+      set((state) => ({
+        planes,
+        socios: socios.map((item) => ({ ...item, idPlan: state.socios.find((local) => local.id === item.id)?.idPlan ?? item.idPlan })),
+        profesores: profesores.map((item) => ({ ...item, email: state.profesores.find((local) => local.id === item.id)?.email ?? item.email, sueldos: state.profesores.find((local) => local.id === item.id)?.sueldos ?? item.sueldos })),
+        actividades: actividades.map((item) => ({ ...item, materiales: state.actividades.find((local) => local.id === item.id)?.materiales ?? item.materiales, maquinas: state.actividades.find((local) => local.id === item.id)?.maquinas ?? item.maquinas })),
+        loading: false,
+      }));
       return {};
     } catch (error) {
       set({ loading: false });

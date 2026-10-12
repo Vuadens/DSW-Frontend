@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL as string | undefined;
+const configuredBaseURL = import.meta.env.VITE_API_URL as string | undefined;
+const baseURL = configuredBaseURL ? `${configuredBaseURL.replace(/\/$/, '')}/api` : undefined;
 
 /** Con VITE_API_URL vacío la app corre en modo demo, con datos en memoria. */
 export const API_ENABLED = Boolean(baseURL);

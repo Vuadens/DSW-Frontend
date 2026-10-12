@@ -36,7 +36,7 @@ export const planesService = {
   create: async (plan: PlanInput) =>
     fromDto((await httpClient.post<PlanDto>('/planes', toDto(plan))).data, plan),
   update: async (id: number, plan: PlanInput) =>
-    fromDto((await httpClient.put<PlanDto>(`/planes/${id}`, toDto(plan))).data, plan),
+    fromDto((await httpClient.patch<PlanDto>(`/planes/${id}`, toDto(plan))).data, plan),
   remove: async (id: number) => {
     await httpClient.delete(`/planes/${id}`);
   },

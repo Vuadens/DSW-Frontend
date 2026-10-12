@@ -30,7 +30,7 @@ export const profesoresService = {
   create: async (profesor: ProfesorInput) =>
     fromDto((await httpClient.post<ProfesorDto>('/profesores', toDto(profesor))).data, profesor),
   update: async (id: number, profesor: ProfesorInput) =>
-    fromDto((await httpClient.put<ProfesorDto>(`/profesores/${id}`, toDto(profesor))).data, profesor),
+    fromDto((await httpClient.patch<ProfesorDto>(`/profesores/${id}`, toDto(profesor))).data, profesor),
   remove: async (id: number) => {
     await httpClient.delete(`/profesores/${id}`);
   },
