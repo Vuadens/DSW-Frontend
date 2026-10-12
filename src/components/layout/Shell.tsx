@@ -20,18 +20,18 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean }[]> = {
     { to: '/app/clases', label: 'Clases' },
     { to: '/app/maquinas', label: 'Máquinas' },
     { to: '/app/catalogos', label: 'Turnos y materiales' },
-    { to: '/app/perfil', label: 'Mi perfil' },
+    { to: '/app/perfil', label: 'Actualizar mis datos' },
   ],
   profesor: [
     { to: '/app', label: 'Sueldo y proyección', end: true },
-    { to: '/app/perfil', label: 'Mi perfil' },
+    { to: '/app/perfil', label: 'Actualizar mis datos' },
   ],
   socio: [
     { to: '/app', label: 'Inicio', end: true },
     { to: '/app/clases', label: 'Reservar clase' },
     { to: '/app/reservas', label: 'Mis reservas' },
     { to: '/app/cuotas', label: 'Mis cuotas' },
-    { to: '/app/perfil', label: 'Mi perfil' },
+    { to: '/app/perfil', label: 'Actualizar mis datos' },
   ],
 };
 
