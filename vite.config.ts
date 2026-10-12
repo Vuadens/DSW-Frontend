@@ -5,6 +5,7 @@ import autoprefixer from 'autoprefixer';
 
 export default defineConfig({
   plugins: [react()],
+  server: { allowedHosts: true },
   css: {
     postcss: {
       plugins: [tailwindcss(), autoprefixer()],
