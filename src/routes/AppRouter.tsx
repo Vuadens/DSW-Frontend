@@ -14,7 +14,7 @@ const AdminHome = lazy(() => import('../pages/admin/AdminHome'));
 const Socios = lazy(() => import('../pages/admin/SociosPage'));
 const Profesores = lazy(() => import('../pages/admin/ProfesoresPage'));
 const Planes = lazy(() => import('../pages/admin/PlanesPage'));
-const CuotasAdmin = lazy(() => import('../pages/admin/CuotasAdminPage'));
+const Finanzas = lazy(() => import('../pages/admin/FinanzasPage'));
 const Actividades = lazy(() => import('../pages/admin/ActividadesPage'));
 const ClasesAdmin = lazy(() => import('../pages/admin/ClasesAdminPage'));
 const Maquinas = lazy(() => import('../pages/admin/MaquinasPage'));
@@ -50,7 +50,8 @@ export const AppRouter = () => (
           <Route path="actividades" element={<ByRole admin={<Actividades />} />} />
           <Route path="maquinas" element={<ByRole admin={<Maquinas />} />} />
           <Route path="catalogos" element={<ByRole admin={<Catalogos />} />} />
-          <Route path="cuotas" element={<ByRole admin={<CuotasAdmin />} socio={<MisCuotas />} />} />
+          <Route path="cuotas" element={<ByRole socio={<MisCuotas />} />} />
+          <Route path="finanzas" element={<ByRole admin={<Finanzas />} />} />
           <Route path="clases" element={<ByRole admin={<ClasesAdmin />} socio={<Reservar />} />} />
           <Route path="reservas" element={<ByRole socio={<MisReservas />} />} />
         </Route>

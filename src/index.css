@@ -1104,3 +1104,43 @@ button.av:focus-visible::after {
     grid-template-columns: 1fr;
   }
 }
+/* Refinements: brand, collapsible navigation, profiles, finance and class calendar */
+.brand-logo { width: 46px; height: 28px; object-fit: contain; object-position: left center; }
+.side-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.menu-toggle { border: 0; background: transparent; color: var(--fg); padding: 6px; display: grid; place-items: center; border-radius: 10px; font-size: 24px; line-height: 1; }
+.menu-toggle:hover { background: var(--soft); }
+.menu-collapsed { grid-template-columns: 82px 1fr; }
+.menu-collapsed .side { padding-inline: 13px; }
+.menu-collapsed .side-top { justify-content: center; }
+.menu-collapsed .side-top .logo span, .menu-collapsed .side-top .logo small, .menu-collapsed .me > div, .menu-collapsed .snav a, .menu-collapsed .sf button { display: none; }
+.menu-collapsed .side-top .logo { padding: 0; }
+.menu-collapsed .me { justify-content: center; padding-inline: 0; }
+.profile-screen { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 1.25fr); gap: 12px; align-items: stretch; }
+.profile-portrait { min-height: 510px; border-radius: 28px; background: var(--blue); color: #000; position: relative; overflow: hidden; display: grid; place-items: center; }
+.profile-portrait::after { content: ""; position: absolute; width: 110px; height: 110px; right: -24px; top: -24px; border-radius: 0 0 0 100%; background: #000; }
+.profile-portrait .av { width: 190px; height: 190px; border-radius: 50%; font-size: 76px; background: transparent; color: #000; }
+.profile-details { min-width: 0; padding: 4px 0 0 10px; }
+.profile-details h2 { border-bottom: 1.5px solid var(--fg); padding: 0 0 20px; margin-bottom: 0; }
+.profile-detail { display: grid; gap: 6px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.profile-detail small { color: var(--muted); }
+.profile-detail strong { font-size: 20px; font-weight: 500; }
+.profile-actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 24px; }
+.finance-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.finance-cards .t { min-height: 240px; }
+.finance-cards .num { margin-top: auto; font-size: clamp(44px, 5vw, 72px); }
+.finance-section { margin-top: 40px; }
+.finance-heading { display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid var(--fg); padding-bottom: 16px; }
+.finance-list { border-bottom: 1px solid var(--line); }
+.finance-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 19px 0; border-bottom: 1px solid var(--line); }
+.finance-row h3 { font-size: 18px; }
+.finance-row small { color: var(--muted); }
+.finance-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.finance-actions strong { font: 600 20px "Inter Tight", sans-serif; }
+.class-card { position: relative; padding: 26px 20px; border-radius: 24px; border: 0; color: #000; }
+.class-card h3, .class-card small { color: #000; }
+.class-0 { background: var(--green); }
+.class-1 { background: var(--purple); }
+.class-2 { background: var(--blue); }
+.class-3 { background: var(--orange); }
+.class-card::after { content: ""; display: block; width: 72px; height: 72px; position: absolute; right: -20px; top: -20px; border-radius: 50%; background: #000; }
+@media (max-width: 800px) { .profile-screen, .finance-cards { grid-template-columns: 1fr; } .profile-portrait { min-height: 320px; } .finance-row { align-items: flex-start; flex-direction: column; } .finance-actions { justify-content: flex-start; } }

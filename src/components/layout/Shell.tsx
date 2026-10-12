@@ -11,11 +11,11 @@ import type { Role } from '../../models';
 
 const NAV: Record<Role, { to: string; label: string; end?: boolean }[]> = {
   admin: [
-    { to: '/app', label: 'Resumen', end: true },
+    { to: '/app', label: 'Mi panel', end: true },
     { to: '/app/socios', label: 'Socios' },
     { to: '/app/profesores', label: 'Profesores' },
     { to: '/app/planes', label: 'Planes' },
-    { to: '/app/cuotas', label: 'Cuotas' },
+    { to: '/app/finanzas', label: 'Finanzas' },
     { to: '/app/actividades', label: 'Actividades' },
     { to: '/app/clases', label: 'Clases' },
     { to: '/app/maquinas', label: 'Máquinas' },
@@ -46,6 +46,7 @@ export function Shell() {
   const cycleTheme = useUiStore((s) => s.cycleTheme);
   const navigate = useNavigate();
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   if (!user) return <Navigate to="/ingresar" replace />;
 
@@ -53,9 +54,14 @@ export function Shell() {
   const name = fullName(user.nombre, user.apellido);
 
   return (
-    <div className="app">
+    <div className={`app${collapsed ? ' menu-collapsed' : ''}`}>
       <aside className="side">
-        <Logo sub={ROLE_LABEL[user.role]} to="/app" />
+        <div className="side-top">
+          <Logo sub={ROLE_LABEL[user.role]} to="/app" />
+          <button type="button" className="menu-toggle" onClick={() => setCollapsed((value) => !value)} aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'} aria-pressed={collapsed}>
+            <span aria-hidden="true">{collapsed ? '☰' : '×'}</span>
+          </button>
+        </div>
         <div className="me">
           <Avatar role={user.role} name={name} photo={photo} onClick={() => setPhotoOpen(true)} />
           <div>

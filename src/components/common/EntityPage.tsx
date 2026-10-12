@@ -25,6 +25,7 @@ interface Props<T extends { id: number }> {
   canEdit?: boolean;
   /** Contenido adicional bajo el encabezado, por ejemplo resúmenes. */
   header?: ReactNode;
+  itemClassName?: (item: T) => string;
 }
 
 export function EntityPage<T extends { id: number }>({
@@ -41,6 +42,7 @@ export function EntityPage<T extends { id: number }>({
   searchText,
   renderActions,
   header,
+  itemClassName,
 }: Props<T>) {
   const save = useDataStore((s) => s.save);
   const remove = useDataStore((s) => s.remove);
@@ -88,7 +90,7 @@ export function EntityPage<T extends { id: number }>({
       ) : (
         <div className="rows">
           {visible.map((item) => (
-            <div key={item.id} className="row">
+            <div key={item.id} className={`row ${itemClassName?.(item) ?? ''}`}>
               <div>{renderItem(item)}</div>
               <div className="rb">
                 {renderActions?.(item)}

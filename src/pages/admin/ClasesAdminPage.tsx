@@ -84,6 +84,7 @@ export default function ClasesAdminPage() {
         idProfesor: Number(v.idProfesor),
         ocupadosBase: existing?.ocupadosBase ?? 0,
       })}
+      itemClassName={(c) => `class-card class-${c.idActividad % 4}`}
       renderItem={(c) => {
         const actividad = actividades.find((a) => a.id === c.idActividad);
         const profesor = profesores.find((p) => p.id === c.idProfesor);

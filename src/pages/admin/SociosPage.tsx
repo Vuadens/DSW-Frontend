@@ -1,4 +1,7 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { fmt } from '../../lib/format';
+import { estadoCuota } from '../../lib/rules';
 import { z } from 'zod';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
@@ -83,6 +86,10 @@ export default function SociosPage() {
         fechaBaja: v.fechaBaja,
         idPlan: toId(v.idPlan),
       })}
+      renderActions={(s) => {
+        const balance = useDataStore.getState().cuotas.filter((c) => c.idSocio === s.id && estadoCuota(c) !== 'pagada').reduce((sum, c) => sum + c.valor, 0);
+        return <Link className="btn line sm" to={`/app/finanzas?socio=${s.id}`}>{balance ? `Cuotas ${fmt(balance)}` : 'Cuotas al día'}</Link>;
+      }}
       renderItem={(s) => {
         const plan = planes.find((p) => p.id === s.idPlan);
         return (

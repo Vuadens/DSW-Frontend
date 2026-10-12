@@ -15,7 +15,7 @@ export default function AdminHome() {
 
   return (
     <>
-      <PageHeader eyebrow={longDate(TODAY)} title="Resumen" lede="El estado del gimnasio de un vistazo." />
+      <PageHeader eyebrow={longDate(TODAY)} title="Mi panel." lede="El estado del gimnasio de un vistazo." actions={<Link className="btn line sm" to="/app/finanzas">Ver finanzas</Link>} />
       <div className="tiles">
         <Tile tone="green">
           <h3>Ingresos del mes</h3>
