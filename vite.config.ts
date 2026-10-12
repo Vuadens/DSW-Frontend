@@ -10,4 +10,5 @@ export default defineConfig({
       plugins: [tailwindcss(), autoprefixer()],
     },
   },
+  server.allowedHosts: sb-5bwc41acfflp.vercel.run
 });
