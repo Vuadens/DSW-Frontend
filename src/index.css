@@ -1167,3 +1167,18 @@ button.av:focus-visible::after {
 .salary-row strong { font-size: 20px; }
 .brand-logo { width: 88px; height: 32px; object-fit: contain; object-position: left center; }
 @media (max-width: 800px) { .plans-grid, .salary-layout { grid-template-columns: 1fr; } .salary-card strong { font-size: 60px; } }
+/* Theme controls and official brand treatment */
+.theme-toggle { border: 1px solid var(--fg); background: transparent; color: var(--fg); border-radius: 999px; min-height: 38px; padding: 8px 13px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font: 600 14px/1 Inter, system-ui, sans-serif; }
+.theme-toggle:hover { background: var(--fg); color: var(--bg); }
+.theme-toggle.compact { min-width: 38px; padding: 8px; font-size: 19px; }
+.auth-visual { background: var(--blue) !important; position: relative; overflow: hidden; }
+.auth-visual::after { content: ""; position: absolute; width: 112px; height: 112px; top: -1px; right: -1px; border-radius: 0 0 0 100%; background: #000; }
+.auth-visual .logo { position: relative; z-index: 1; }
+.brand-mark { display: inline-flex; align-items: center; }
+.brand-logo-dark { display: none; }
+:root[data-theme="dark"] .brand-logo-light { display: none; }
+:root[data-theme="dark"] .brand-logo-dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .brand-logo-light { display: none; }
+  :root:not([data-theme="light"]) .brand-logo-dark { display: block; }
+}

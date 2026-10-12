@@ -5,7 +5,7 @@ import { Tile } from '../../components/common/Tile';
 export function AuthShell({ title, text, children }: { title: string; text: string; children: ReactNode }) {
   return (
     <div className="lgp">
-      <Tile tone="orange" flat>
+      <Tile tone="blue" flat className="auth-visual">
         <Logo />
         <h2>{title}</h2>
         <p>{text}</p>

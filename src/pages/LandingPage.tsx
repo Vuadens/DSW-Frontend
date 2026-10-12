@@ -4,6 +4,7 @@ import { Tile } from '../components/common/Tile';
 import { fmt } from '../lib/format';
 import { useCurrentUser } from '../stores/authStore';
 import { useDataStore } from '../stores/dataStore';
+import { ThemeToggle } from '../components/common/ThemeToggle';
 
 const BLOCKS = ['var(--orange)', 'var(--green)', 'var(--purple)', 'var(--blue)'];
 
@@ -16,6 +17,7 @@ export default function LandingPage() {
       <header className="ln">
         <Logo />
         <nav className="row2" aria-label="Acceso">
+          <ThemeToggle compact />
           <Link to={user ? '/app' : '/ingresar'} className="btn line sm">
             {user ? 'Mi panel' : 'Ingresar'}
           </Link>
