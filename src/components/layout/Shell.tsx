@@ -23,7 +23,7 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean }[]> = {
     { to: '/app/perfil', label: 'Mi perfil' },
   ],
   profesor: [
-    { to: '/app', label: 'Mi agenda', end: true },
+    { to: '/app', label: 'Sueldo y proyección', end: true },
     { to: '/app/perfil', label: 'Mi perfil' },
   ],
   socio: [

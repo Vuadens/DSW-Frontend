@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { PageHeader } from '../../components/common/Tile';
-import { DIAS, claseFecha, diaNumero, fullName, horario } from '../../lib/format';
+import { DIAS, claseFecha, diaNumero, fmt, fullName, horario } from '../../lib/format';
 import { ocupados } from '../../lib/rules';
 import { useCurrentUser } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
@@ -12,6 +12,11 @@ export default function ProfesorHome() {
   const inscripciones = useDataStore((s) => s.inscripciones);
   const socios = useDataStore((s) => s.socios);
   const marcarAsistencia = useDataStore((s) => s.marcarAsistencia);
+  const profesor = useDataStore((s) => s.profesores.find((item) => item.id === user?.id));
+  const sueldoBase = profesor?.sueldos[profesor.sueldos.length - 1]?.valor ?? 0;
+  const clasesSemanales = clases.filter((clase) => clase.idProfesor === user?.id).length;
+  const adicional = Math.round(sueldoBase * 0.05);
+  const proyeccion = sueldoBase + adicional;
 
   const agenda = useMemo(() => {
     const propias = clases.filter((c) => c.idProfesor === user?.id);
@@ -23,6 +28,20 @@ export default function ProfesorHome() {
 
   return (
     <>
+      <PageHeader title="Tu sueldo." lede="Cobrás el último día hábil del mes, por transferencia." />
+      <section className="salary-layout" aria-label="Sueldo y proyección">
+        <div className="salary-card">
+          <small>Vas a cobrar el próximo mes</small>
+          <strong>{fmt(proyeccion)}</strong>
+          <p>5% más que tu sueldo base, por tus {clasesSemanales} clases semanales.</p>
+          <div className="salary-breakdown"><span>Sueldo base <b>{fmt(sueldoBase)}</b></span><span>Por tus clases <b>{fmt(adicional)}</b></span></div>
+        </div>
+        <div className="class-summary"><strong>{clasesSemanales} clases por semana</strong><span>Según tu agenda actual</span></div>
+      </section>
+      <section className="salary-history">
+        <h2>Lo que ya cobraste.</h2>
+        {profesor?.sueldos.slice().reverse().map((sueldo) => <div className="salary-row" key={sueldo.desde}><span><b>{new Date(`${sueldo.desde}T12:00:00`).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}</b><small>Acreditado por transferencia</small></span><strong>{fmt(sueldo.valor)}</strong></div>)}
+      </section>
       <PageHeader title="Mi agenda" lede="Tus clases de la semana y la asistencia de cada una." />
       {agenda.length === 0 && <p className="none">No tenés clases asignadas.</p>}
       {agenda.map(({ dia, clases: delDia }) => (

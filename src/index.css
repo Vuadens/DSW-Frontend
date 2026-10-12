@@ -1144,3 +1144,26 @@ button.av:focus-visible::after {
 .class-3 { background: var(--orange); }
 .class-card::after { content: ""; display: block; width: 72px; height: 72px; position: absolute; right: -20px; top: -20px; border-radius: 50%; background: #000; }
 @media (max-width: 800px) { .profile-screen, .finance-cards { grid-template-columns: 1fr; } .profile-portrait { min-height: 320px; } .finance-row { align-items: flex-start; flex-direction: column; } .finance-actions { justify-content: flex-start; } }
+/* Public plans and professor salary projection */
+.plans-home { padding-top: 48px; }
+.plans-grid { margin-top: 22px; grid-template-columns: repeat(3, 1fr); }
+.plans-grid .t { min-height: 238px; }
+.plans-grid .btn { width: 100%; margin-top: 18px; }
+.salary-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(240px, .7fr); gap: 12px; }
+.salary-card, .class-summary { min-height: 300px; border-radius: 25px; padding: 24px 22px; color: #000; background: var(--green); display: flex; flex-direction: column; }
+.salary-card strong { font-size: clamp(58px, 7vw, 94px); letter-spacing: -.08em; line-height: 1; margin-top: 48px; }
+.salary-card p { margin: 10px 0 16px; }
+.salary-breakdown { border-top: 1px solid #000; margin-top: auto; padding-top: 15px; display: flex; justify-content: space-between; gap: 20px; }
+.salary-breakdown span, .salary-breakdown b { display: grid; gap: 3px; }
+.salary-breakdown b { font-size: 20px; font-weight: 500; }
+.class-summary { background: var(--blue); justify-content: flex-end; }
+.class-summary strong { font-size: 32px; letter-spacing: -.06em; }
+.class-summary span { margin-top: 8px; }
+.salary-history { margin: 38px 0 55px; }
+.salary-history h2 { border-bottom: 1px solid currentColor; padding-bottom: 14px; }
+.salary-row { display: flex; justify-content: space-between; gap: 20px; padding: 19px 0; border-bottom: 1px solid var(--line); }
+.salary-row span { display: grid; gap: 4px; }
+.salary-row small { color: var(--muted); }
+.salary-row strong { font-size: 20px; }
+.brand-logo { width: 88px; height: 32px; object-fit: contain; object-position: left center; }
+@media (max-width: 800px) { .plans-grid, .salary-layout { grid-template-columns: 1fr; } .salary-card strong { font-size: 60px; } }

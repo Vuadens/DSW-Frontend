@@ -1,20 +1,25 @@
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/common/Logo';
+import { Tile } from '../components/common/Tile';
+import { fmt } from '../lib/format';
+import { useCurrentUser } from '../stores/authStore';
+import { useDataStore } from '../stores/dataStore';
 
 const BLOCKS = ['var(--orange)', 'var(--green)', 'var(--purple)', 'var(--blue)'];
 
 export default function LandingPage() {
+  const user = useCurrentUser();
+  const planes = useDataStore((state) => state.planes);
+
   return (
     <div className="w">
       <header className="ln">
         <Logo />
         <nav className="row2" aria-label="Acceso">
-          <Link to="/ingresar" className="btn line sm">
-            Ingresar
+          <Link to={user ? '/app' : '/ingresar'} className="btn line sm">
+            {user ? 'Mi panel' : 'Ingresar'}
           </Link>
-          <Link to="/registro" className="btn sm">
-            Crear cuenta
-          </Link>
+          {!user && <Link to="/registro" className="btn sm">Crear cuenta</Link>}
         </nav>
       </header>
       <main>
@@ -35,6 +40,20 @@ export default function LandingPage() {
             <div key={color} style={{ background: color }} />
           ))}
         </div>
+        <section className="sp plans-home">
+          <h2>Elegí tu plan.</h2>
+          <p className="lede">Pagás online con Mercado Pago y empezás el mismo día.</p>
+          <div className="tiles plans-grid">
+            {planes.map((plan, index) => (
+              <Tile key={plan.id} tone={(['purple', 'blue', 'green'] as const)[index % 3]}>
+                <h3>{plan.nombre}</h3>
+                <span className="num">{fmt(plan.precio)}</span>
+                <p>por mes</p>
+                <Link to={user ? '/app' : '/registro'} className="btn">Elegir plan</Link>
+              </Tile>
+            ))}
+          </div>
+        </section>
         <section className="sp">
           <h2>Todo el gimnasio en un panel.</h2>
           <p className="lede">
