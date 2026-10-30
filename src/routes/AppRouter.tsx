@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Shell } from '../components/layout/Shell';
 import type { Role } from '../models';
 import { useAuthStore } from '../stores/authStore';
+import { MODULOS_DEMO } from '../lib/features';
 
 const Landing = lazy(() => import('../pages/LandingPage'));
 const Login = lazy(() => import('../pages/auth/LoginPage'));
@@ -27,6 +28,9 @@ const Reservar = lazy(() => import('../pages/socio/ReservarPage'));
 const MisReservas = lazy(() => import('../pages/socio/MisReservasPage'));
 const MisCuotas = lazy(() => import('../pages/socio/MisCuotasPage'));
 
+/** Módulo sin backend todavía: en modo conectado redirige al inicio. */
+const demo = (element: ReactNode) => (MODULOS_DEMO ? element : <Navigate to="/app" replace />);
+
 function ByRole({ admin, profesor, socio }: Partial<Record<Role, ReactNode>>) {
   const role = useAuthStore((s) => s.session?.role);
   const content = role === 'admin' ? admin : role === 'profesor' ? profesor : socio;
@@ -39,19 +43,19 @@ export const AppRouter = () => (
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/ingresar" element={<Login />} />
-        <Route path="/registro" element={<Register />} />
-        <Route path="/recuperar" element={<Recover />} />
+        <Route path="/registro" element={MODULOS_DEMO ? <Register /> : <Navigate to="/ingresar" replace />} />
+        <Route path="/recuperar" element={MODULOS_DEMO ? <Recover /> : <Navigate to="/ingresar" replace />} />
         <Route path="/app" element={<Shell />}>
           <Route index element={<ByRole admin={<AdminHome />} profesor={<ProfesorHome />} socio={<SocioHome />} />} />
           <Route path="perfil" element={<Perfil />} />
           <Route path="socios" element={<ByRole admin={<Socios />} />} />
           <Route path="profesores" element={<ByRole admin={<Profesores />} />} />
-          <Route path="planes" element={<ByRole admin={<Planes />} />} />
+          <Route path="planes" element={demo(<ByRole admin={<Planes />} />)} />
           <Route path="actividades" element={<ByRole admin={<Actividades />} />} />
-          <Route path="maquinas" element={<ByRole admin={<Maquinas />} />} />
+          <Route path="maquinas" element={demo(<ByRole admin={<Maquinas />} />)} />
           <Route path="catalogos" element={<ByRole admin={<Catalogos />} />} />
-          <Route path="cuotas" element={<ByRole socio={<MisCuotas />} />} />
-          <Route path="finanzas" element={<ByRole admin={<Finanzas />} />} />
+          <Route path="cuotas" element={demo(<ByRole socio={<MisCuotas />} />)} />
+          <Route path="finanzas" element={demo(<ByRole admin={<Finanzas />} />)} />
           <Route path="clases" element={<ByRole admin={<ClasesAdmin />} socio={<Reservar />} />} />
           <Route path="reservas" element={<ByRole socio={<MisReservas />} />} />
         </Route>

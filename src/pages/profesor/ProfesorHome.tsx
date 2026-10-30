@@ -4,6 +4,7 @@ import { DIAS, claseFecha, diaNumero, fmt, fullName, horario } from '../../lib/f
 import { ocupados } from '../../lib/rules';
 import { useCurrentUser } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
+import { MODULOS_DEMO } from '../../lib/features';
 
 export default function ProfesorHome() {
   const user = useCurrentUser();
@@ -28,6 +29,7 @@ export default function ProfesorHome() {
 
   return (
     <>
+      {MODULOS_DEMO && <>
       <PageHeader title="Tu sueldo." lede="Cobrás el último día hábil del mes, por transferencia." />
       <section className="salary-layout" aria-label="Sueldo y proyección">
         <div className="salary-card">
@@ -42,6 +44,7 @@ export default function ProfesorHome() {
         <h2>Lo que ya cobraste.</h2>
         {profesor?.sueldos.slice().reverse().map((sueldo) => <div className="salary-row" key={sueldo.desde}><span><b>{new Date(`${sueldo.desde}T12:00:00`).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}</b><small>Acreditado por transferencia</small></span><strong>{fmt(sueldo.valor)}</strong></div>)}
       </section>
+      </>}
       <PageHeader title="Mi agenda" lede="Tus clases de la semana y la asistencia de cada una." />
       {agenda.length === 0 && <p className="none">No tenés clases asignadas.</p>}
       {agenda.map(({ dia, clases: delDia }) => (

@@ -4,6 +4,7 @@ import { PERIODO_ACTUAL, fmt, longDate, TODAY } from '../../lib/format';
 import { ESTADO_CUOTA_LABEL, clasesDelPeriodo, estadoCuota, periodoLabel } from '../../lib/rules';
 import { useCurrentUser } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
+import { MODULOS_DEMO } from '../../lib/features';
 
 export default function SocioHome() {
   const user = useCurrentUser();
@@ -50,7 +51,7 @@ export default function SocioHome() {
             </Link>
           </TileFooter>
         </Tile>
-        <Tile tone={mora.length ? 'red' : 'green'}>
+        {MODULOS_DEMO && <Tile tone={mora.length ? 'red' : 'green'}>
           <h3>Cuota de octubre</h3>
           <span className="num">{actual ? ESTADO_CUOTA_LABEL[estadoCuota(actual)] : 'Sin cuota'}</span>
           <p>
@@ -65,7 +66,7 @@ export default function SocioHome() {
               Ver cuotas
             </Link>
           </TileFooter>
-        </Tile>
+        </Tile>}
         <Tile tone="blue">
           <h3>Próxima clase</h3>
           <span className="num">{proximaActividad?.nombre ?? 'Ninguna'}</span>
