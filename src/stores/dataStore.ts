@@ -71,6 +71,7 @@ const remotes: Partial<Record<CollectionKey, Remote>> = {
   socios: sociosService as unknown as Remote,
   profesores: profesoresService as unknown as Remote,
   actividades: actividadesService as unknown as Remote,
+  turnos: turnosService as unknown as Remote,
 };
 
 /** Bloqueos de integridad referencial: espejo de las restricciones del backend. */
