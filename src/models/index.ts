@@ -72,9 +72,14 @@ export type TipoActividad = 'Clase' | 'Musculación';
 export interface Actividad {
   id: number;
   nombre: string;
+  /** Sin backend todavía: solo modo demo. */
   tipo: TipoActividad;
   descripcion: string;
+  /** Cupo máximo de cada clase de la actividad. */
+  cupoMaximo: number;
+  /** Planes que incluyen la actividad (Plan–Actividad). */
   planes: number[];
+  /** Materiales, máquinas y profesores: sin backend todavía, solo modo demo. */
   materiales: number[];
   maquinas: number[];
   profesores: number[];

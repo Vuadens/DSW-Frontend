@@ -112,6 +112,7 @@ export const seedActividades = (): Actividad[] =>
     nombre,
     tipo,
     descripcion: '',
+    cupoMaximo: tipo === 'Musculación' ? 40 : 25,
     planes: [...planes],
     materiales: [...materiales],
     maquinas: [...maquinas],
