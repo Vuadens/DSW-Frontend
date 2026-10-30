@@ -14,15 +14,19 @@ export interface Plan {
   clasesPorPeriodo: number | null;
 }
 
-export interface Socio {
+/** Datos de Persona, compartidos por Socio y Profesor. El id es el idPersona del backend. */
+export interface Persona {
   id: number;
+  dni: string;
   nombre: string;
   apellido: string;
-  dni: string;
-  email: string;
   telefono: string;
-  direccion: string;
   fechaNac: string;
+  /** Email de la cuenta (Usuario en el backend). Solo se usa para el login del modo demo. */
+  email?: string;
+}
+
+export interface Socio extends Persona {
   fechaAlta: string;
   fechaBaja: string;
   idPlan: number | null;
@@ -33,15 +37,11 @@ export interface SueldoHistorico {
   valor: number;
 }
 
-export interface Profesor {
-  id: number;
-  nombre: string;
-  apellido: string;
+export interface Profesor extends Persona {
   cargo: string;
-  email: string;
-  telefono: string;
-  idTurno: number | null;
-  idSupervisor: number | null;
+  /** Turnos (día + franja) en los que trabaja. */
+  turnos: number[];
+  /** Sin backend todavía (HistoricoSueldo): solo modo demo. */
   sueldos: SueldoHistorico[];
 }
 
@@ -52,9 +52,11 @@ export interface Administrador {
   email: string;
 }
 
+/** Turno de trabajo del personal: una franja horaria de un día de la semana. */
 export interface Turno {
   id: number;
   nombre: string;
+  dia: DiaSemana;
   desde: string;
   hasta: string;
 }
