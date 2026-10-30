@@ -24,7 +24,9 @@ export const periodoLabel = (periodo: string) => {
   return `${meses[Number(m) - 1]} ${y}`;
 };
 
+/** En modo conectado la ocupación viene del backend (el socio solo ve sus propias inscripciones). */
 export const ocupados = (clase: Clase, inscripciones: Inscripcion[]) =>
+  clase.inscriptos ??
   clase.ocupadosBase +
   inscripciones.filter(
     (i) => i.idClase === clase.id && i.estado === 'Confirmada' && i.fechaClase === claseFecha(clase.dia),

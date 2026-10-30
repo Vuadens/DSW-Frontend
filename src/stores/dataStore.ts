@@ -18,6 +18,8 @@ import { planesService } from '../api/planes.service';
 import { profesoresService } from '../api/profesores.service';
 import { sociosService } from '../api/socios.service';
 import { turnosService } from '../api/turnos.service';
+import { clasesService } from '../api/clases.service';
+import { inscripcionesService } from '../api/inscripciones.service';
 import { PERIODO_ACTUAL, TODAY, claseFecha, nextId } from '../lib/format';
 import { adicionalPorClase, clasesDelPeriodo, puedeReservar } from '../lib/rules';
 import type {
@@ -72,6 +74,22 @@ const remotes: Partial<Record<CollectionKey, Remote>> = {
   profesores: profesoresService as unknown as Remote,
   actividades: actividadesService as unknown as Remote,
   turnos: turnosService as unknown as Remote,
+  clases: clasesService as unknown as Remote,
+};
+
+/**
+ * Ejecuta una operación sobre inscripciones en el backend y recarga clases e inscripciones,
+ * porque la ocupación de las clases la calcula el backend.
+ */
+const conectado = async (operacion: () => Promise<unknown>): Promise<Result> => {
+  try {
+    await operacion();
+    const [clases, inscripciones] = await Promise.all([clasesService.list(), inscripcionesService.list()]);
+    useDataStore.setState({ clases, inscripciones });
+    return {};
+  } catch (error) {
+    return { error: apiErrorMessage(error) };
+  }
 };
 
 /** Bloqueos de integridad referencial: espejo de las restricciones del backend. */
@@ -105,9 +123,11 @@ interface DataState extends Collections {
   hydrate: (role: Role) => Promise<Result>;
   save: <K extends CollectionKey>(key: K, draft: Draft<K>) => Promise<Result>;
   remove: (key: CollectionKey, id: number) => Promise<Result>;
-  reservar: (socioId: number, claseId: number) => Result & { adicional?: number };
-  cancelarReserva: (inscripcionId: number) => void;
-  marcarAsistencia: (inscripcionId: number, asistio: boolean) => void;
+  reservar: (socioId: number, claseId: number) => Promise<Result & { adicional?: number }>;
+  cancelarReserva: (inscripcionId: number) => Promise<Result>;
+  marcarAsistencia: (inscripcionId: number, asistio: boolean) => Promise<Result>;
+  /** Borrado físico de una inscripción (solo admin). */
+  eliminarInscripcion: (inscripcionId: number) => Promise<Result>;
   pagarCuota: (cuotaId: number, metodo: MetodoPago) => void;
   generarCuotas: () => number;
   setEstadoMaquina: (id: number, estado: EstadoMaquina) => void;
@@ -135,15 +155,18 @@ export const useDataStore = create<DataState>((set, get) => ({
     try {
       // Solo lo que el rol puede ver: el socio no accede a profesores ni a turnos.
       const staff = role !== 'socio';
-      const [planes, socios, profesores, turnos, actividades] = await Promise.all([
+      const [planes, socios, profesores, turnos, actividades, clases, inscripciones] = await Promise.all([
         planesService.list(),
         sociosService.list(),
         staff ? profesoresService.list() : Promise.resolve([] as Profesor[]),
         staff ? turnosService.list() : Promise.resolve([] as Turno[]),
         actividadesService.list(),
+        clasesService.list(),
+        inscripcionesService.list(),
       ]);
       // Los ids del backend no coinciden con los del seed local: no se mezclan datos.
-      set({ planes, socios, profesores, turnos, actividades, loading: false });
+      // Cuotas, máquinas y materiales no tienen backend todavía: en modo conectado quedan vacíos.
+      set({ planes, socios, profesores, turnos, actividades, clases, inscripciones, cuotas: [], maquinas: [], materiales: [], loading: false });
       return {};
     } catch (error) {
       set({ loading: false });
@@ -190,7 +213,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     return {};
   },
 
-  reservar: (socioId, claseId) => {
+  reservar: async (socioId, claseId) => {
     const state = get();
     const socio = state.socios.find((s) => s.id === socioId);
     const clase = state.clases.find((c) => c.id === claseId);
@@ -199,6 +222,10 @@ export const useDataStore = create<DataState>((set, get) => ({
     const actividad = state.actividades.find((a) => a.id === clase.idActividad);
     const check = puedeReservar(socio, plan, clase, actividad, state.cuotas, state.inscripciones);
     if (!check.permitido) return { error: check.motivo };
+    // Modo conectado: el backend vuelve a validar todas las reglas y es la fuente de verdad.
+    if (API_ENABLED) {
+      return conectado(() => inscripcionesService.reservar(socioId, claseId, claseFecha(clase.dia)));
+    }
     const inscripcion: Inscripcion = {
       id: nextId(state.inscripciones),
       idSocio: socioId,
@@ -225,15 +252,33 @@ export const useDataStore = create<DataState>((set, get) => ({
     return { adicional: check.adicional };
   },
 
-  cancelarReserva: (inscripcionId) =>
+  cancelarReserva: async (inscripcionId) => {
+    if (API_ENABLED) return conectado(() => inscripcionesService.cancelar(inscripcionId));
     set((state) => ({
       inscripciones: state.inscripciones.map((i) => (i.id === inscripcionId ? { ...i, estado: 'Cancelada' } : i)),
-    })),
+    }));
+    return {};
+  },
 
-  marcarAsistencia: (inscripcionId, asistio) =>
+  marcarAsistencia: async (inscripcionId, asistio) => {
+    if (API_ENABLED) {
+      try {
+        await inscripcionesService.asistencia(inscripcionId, asistio);
+      } catch (error) {
+        return { error: apiErrorMessage(error) };
+      }
+    }
     set((state) => ({
       inscripciones: state.inscripciones.map((i) => (i.id === inscripcionId ? { ...i, asistio } : i)),
-    })),
+    }));
+    return {};
+  },
+
+  eliminarInscripcion: async (inscripcionId) => {
+    if (API_ENABLED) return conectado(() => inscripcionesService.remove(inscripcionId));
+    set((state) => ({ inscripciones: state.inscripciones.filter((i) => i.id !== inscripcionId) }));
+    return {};
+  },
 
   pagarCuota: (cuotaId, metodo) =>
     set((state) => ({

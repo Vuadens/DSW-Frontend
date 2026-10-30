@@ -98,6 +98,8 @@ export interface Clase {
   idProfesor: number;
   /** Ocupación que no proviene de inscripciones cargadas en la app (solo demo). */
   ocupadosBase: number;
+  /** Modo conectado: inscriptos en la próxima fecha de la clase, calculados por el backend. */
+  inscriptos?: number;
 }
 
 export type EstadoInscripcion = 'Confirmada' | 'Cancelada';

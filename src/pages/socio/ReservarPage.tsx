@@ -74,8 +74,8 @@ export default function ReservarPage() {
                         type="button"
                         className="btn sm"
                         disabled={!check.permitido}
-                        onClick={() => {
-                          const result = reservar(socio.id, c.id);
+                        onClick={async () => {
+                          const result = await reservar(socio.id, c.id);
                           if (result.error) return showToast(result.error);
                           showToast(
                             result.adicional

@@ -4,6 +4,7 @@ import { DIAS, claseFecha, diaNumero, fmt, fullName, horario } from '../../lib/f
 import { ocupados } from '../../lib/rules';
 import { useCurrentUser } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
+import { useUiStore } from '../../stores/uiStore';
 import { MODULOS_DEMO } from '../../lib/features';
 
 export default function ProfesorHome() {
@@ -13,6 +14,7 @@ export default function ProfesorHome() {
   const inscripciones = useDataStore((s) => s.inscripciones);
   const socios = useDataStore((s) => s.socios);
   const marcarAsistencia = useDataStore((s) => s.marcarAsistencia);
+  const showToast = useUiStore((s) => s.showToast);
   const profesor = useDataStore((s) => s.profesores.find((item) => item.id === user?.id));
   const sueldoBase = profesor?.sueldos[profesor.sueldos.length - 1]?.valor ?? 0;
   const clasesSemanales = clases.filter((clase) => clase.idProfesor === user?.id).length;
@@ -73,7 +75,10 @@ export default function ProfesorHome() {
                           <input
                             type="checkbox"
                             checked={i.asistio}
-                            onChange={(event) => marcarAsistencia(i.id, event.target.checked)}
+                            onChange={async (event) => {
+                              const result = await marcarAsistencia(i.id, event.target.checked);
+                              if (result.error) showToast(result.error);
+                            }}
                           />
                           {socio ? fullName(socio.nombre, socio.apellido) : 'Socio'}
                         </label>
