@@ -187,20 +187,19 @@ export const seedCuotas = (): Cuota[] =>
   }));
 
 export const seedMaquinas = (): Maquina[] => {
-  type Raw = [number, string, string, string, string, 'ok' | 'mant' | 'out', [string, string, string, string | null, string][]];
+  type Raw = [number, string, string, string, 'ok' | 'mant' | 'out', [string, string, string, string | null, string][]];
   const raw: Raw[] = [
-    [1, 'Prensa 45° Inclinada Pro', 'Musculación', 'Zona Piernas (Sector A)', 'Prensa lineal de alta carga con trabas de seguridad duales y soporte para discos olímpicos.', 'ok', [['Preventivo', '2026-07-10', '2026-07-11', '2026-07-11', 'Lubricación de rieles lineales y calibración de seguros mecánicos.']]],
-    [2, 'Cinta de Correr Matrix T50 #1', 'Cardio', 'Sector Cardio Frente', 'Cinta profesional con motor AC de 4.2HP, amortiguación Cushion Deck y pantalla táctil.', 'ok', [['Preventivo', '2026-08-15', '2026-08-15', '2026-08-15', 'Tensión y centrado de banda de rodamiento, aspirado de motor.']]],
-    [3, 'Polea Dual Regulable Cable Crossover', 'Musculación', 'Zona Central Musculación', 'Torre dual con poleas ajustables verticalmente en 18 posiciones y lingotes de 100kg.', 'mant', [['Preventivo', '2026-10-09', '2026-10-13', null, 'Reemplazo programado de cable de acero recubierto desgastado en polea izquierda.']]],
-    [4, 'Bicicleta Keiser M3i Indoor #04', 'Cardio', 'Sala de Ciclismo', 'Bicicleta magnética con conectividad Bluetooth para sala de spinning.', 'out', [['Correctivo', '2026-10-10', '2026-10-14', null, 'Falla en sensor de potencia y resistencia magnética. Esperando repuesto oficial.']]],
-    [5, 'Banco Press Olímpico Plano', 'Peso libre', 'Zona Peso Libre', 'Banco reforzado con soportes de uretano y plataforma de asistencia para spotter.', 'ok', [['Preventivo', '2026-05-20', '2026-05-20', '2026-05-20', 'Retapizado de cuerina de alto impacto y ajuste de bulonería.']]],
-    [6, 'Dorsalera / Remo Sentado Combinado', 'Musculación', 'Zona Espalda (Sector B)', 'Máquina combinada con rodillos fijadores ajustables para tirón dorsal y remo bajo.', 'ok', []],
+    [1, 'Prensa 45° Inclinada Pro', 'Musculación', 'Prensa lineal de alta carga con trabas de seguridad duales y soporte para discos olímpicos.', 'ok', [['Preventivo', '2026-07-10', '2026-07-11', '2026-07-11', 'Lubricación de rieles lineales y calibración de seguros mecánicos.']]],
+    [2, 'Cinta de Correr Matrix T50 #1', 'Cardio', 'Cinta profesional con motor AC de 4.2HP, amortiguación Cushion Deck y pantalla táctil.', 'ok', [['Preventivo', '2026-08-15', '2026-08-15', '2026-08-15', 'Tensión y centrado de banda de rodamiento, aspirado de motor.']]],
+    [3, 'Polea Dual Regulable Cable Crossover', 'Musculación', 'Torre dual con poleas ajustables verticalmente en 18 posiciones y lingotes de 100kg.', 'mant', [['Preventivo', '2026-10-09', '2026-10-13', null, 'Reemplazo programado de cable de acero recubierto desgastado en polea izquierda.']]],
+    [4, 'Bicicleta Keiser M3i Indoor #04', 'Cardio', 'Bicicleta magnética con conectividad Bluetooth para sala de spinning.', 'out', [['Correctivo', '2026-10-10', '2026-10-14', null, 'Falla en sensor de potencia y resistencia magnética. Esperando repuesto oficial.']]],
+    [5, 'Banco Press Olímpico Plano', 'Peso libre', 'Banco reforzado con soportes de uretano y plataforma de asistencia para spotter.', 'ok', [['Preventivo', '2026-05-20', '2026-05-20', '2026-05-20', 'Retapizado de cuerina de alto impacto y ajuste de bulonería.']]],
+    [6, 'Dorsalera / Remo Sentado Combinado', 'Musculación', 'Máquina combinada con rodillos fijadores ajustables para tirón dorsal y remo bajo.', 'ok', []],
   ];
-  return raw.map(([id, nombre, tipo, ubicacion, descripcion, estado, mants], i) => ({
+  return raw.map(([id, nombre, tipo, descripcion, estado, mants], i) => ({
     id,
     nombre,
     tipo,
-    ubicacion,
     descripcion,
     estado,
     mantenimientos: mants.map(([t, ini, finEsp, finReal, desc], k) => ({

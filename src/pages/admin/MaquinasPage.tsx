@@ -7,6 +7,7 @@ import { EntityPage } from '../../components/common/EntityPage';
 import { Fields, type FieldDef } from '../../components/common/Fields';
 import { Pill } from '../../components/common/Tile';
 import { TODAY, longDate } from '../../lib/format';
+import { MODULOS_DEMO } from '../../lib/features';
 import { asSchema, date, required, str } from '../../lib/forms';
 import { ESTADO_MAQUINA_LABEL } from '../../lib/rules';
 import type { Maquina, TipoMantenimiento } from '../../models';
@@ -14,13 +15,12 @@ import { useDataStore } from '../../stores/dataStore';
 import { useUiStore } from '../../stores/uiStore';
 
 const schema = asSchema(
-  z.object({ nombre: required, tipo: required, ubicacion: z.string().trim(), descripcion: z.string().trim() }),
+  z.object({ nombre: required, tipo: required, descripcion: z.string().trim() }),
 );
 
 const fields: FieldDef[] = [
   { name: 'nombre', label: 'Nombre', type: 'text' },
   { name: 'tipo', label: 'Tipo', type: 'text', placeholder: 'Cardio, fuerza…' },
-  { name: 'ubicacion', label: 'Ubicación', type: 'text' },
   { name: 'descripcion', label: 'Descripción', type: 'textarea' },
 ];
 
@@ -65,18 +65,16 @@ export default function MaquinasPage() {
         items={maquinas}
         fields={fields}
         schema={schema}
-        searchText={(m) => `${m.nombre} ${m.tipo} ${m.ubicacion}`}
+        searchText={(m) => `${m.nombre} ${m.tipo}`}
         toForm={(m) => ({
           nombre: str(m?.nombre),
           tipo: str(m?.tipo),
-          ubicacion: str(m?.ubicacion),
           descripcion: str(m?.descripcion),
         })}
         fromForm={(v, existing) => ({
           id: existing?.id,
           nombre: v.nombre.trim(),
           tipo: v.tipo.trim(),
-          ubicacion: v.ubicacion.trim(),
           descripcion: v.descripcion.trim(),
           estado: existing?.estado ?? 'ok',
           mantenimientos: existing?.mantenimientos ?? [],
@@ -84,10 +82,7 @@ export default function MaquinasPage() {
         renderItem={(m) => (
           <>
             <h3>{m.nombre}</h3>
-            <small>
-              {m.tipo}
-              {m.ubicacion ? ` · ${m.ubicacion}` : ''}
-            </small>
+            <small>{m.tipo}</small>
             <small>
               <Pill kind={m.estado === 'ok' ? 'ok' : m.estado === 'out' ? 'mora' : undefined}>
                 {ESTADO_MAQUINA_LABEL[m.estado]}
@@ -109,8 +104,28 @@ export default function MaquinasPage() {
 function MantenimientoDrawer({ maquinaId, onClose }: { maquinaId: number | null; onClose: () => void }) {
   return (
     <Dialog open={maquinaId !== null} onClose={onClose} label="Mantenimiento">
-      {maquinaId !== null && <MantenimientoContent maquinaId={maquinaId} onClose={onClose} />}
+      {maquinaId !== null &&
+        (MODULOS_DEMO ? (
+          <MantenimientoContent maquinaId={maquinaId} onClose={onClose} />
+        ) : (
+          <MantenimientoProximamente onClose={onClose} />
+        ))}
     </Dialog>
+  );
+}
+
+// El historial de mantenimientos todavía no tiene backend.
+function MantenimientoProximamente({ onClose }: { onClose: () => void }) {
+  return (
+    <>
+      <h2>Mantenimiento</h2>
+      <p className="none">Próximamente vas a poder registrar y consultar los mantenimientos de cada máquina.</p>
+      <div className="acts">
+        <button type="button" className="btn line sm" onClick={onClose}>
+          Cerrar
+        </button>
+      </div>
+    </>
   );
 }
 

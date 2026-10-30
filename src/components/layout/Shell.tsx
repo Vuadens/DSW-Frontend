@@ -20,7 +20,7 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean; demo?: boole
     { to: '/app/finanzas', label: 'Finanzas', demo: true },
     { to: '/app/actividades', label: 'Actividades' },
     { to: '/app/clases', label: 'Clases' },
-    { to: '/app/maquinas', label: 'Máquinas', demo: true },
+    { to: '/app/maquinas', label: 'Máquinas' },
     { to: '/app/catalogos', label: MODULOS_DEMO ? 'Turnos y materiales' : 'Turnos' },
     { to: '/app/perfil', label: 'Actualizar mis datos' },
   ],
