@@ -1,20 +1,22 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { z } from 'zod';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
 import { asSchema, intNumber, required, str, time } from '../../lib/forms';
-import type { Material, Turno } from '../../models';
+import { DIAS } from '../../lib/format';
+import type { DiaSemana, Material, Turno } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
 
 const turnoSchema = asSchema(
   z
-    .object({ nombre: required, desde: time, hasta: time })
+    .object({ nombre: required, dia: z.string(), desde: time, hasta: time })
     .refine((v) => v.hasta > v.desde, { path: ['hasta'], message: 'Debe terminar después de empezar' }),
 );
 const materialSchema = asSchema(z.object({ descripcion: required, stock: intNumber }));
 
 const turnoFields: FieldDef[] = [
   { name: 'nombre', label: 'Nombre', type: 'text' },
+  { name: 'dia', label: 'Día de la semana', type: 'select', options: DIAS.map((d) => ({ value: d, label: d })) },
   { name: 'desde', label: 'Desde', type: 'time' },
   { name: 'hasta', label: 'Hasta', type: 'time' },
 ];
@@ -28,6 +30,10 @@ export default function CatalogosPage() {
   const turnos = useDataStore((s) => s.turnos);
   const materiales = useDataStore((s) => s.materiales);
   const profesores = useDataStore((s) => s.profesores);
+  const ordenados = useMemo(
+    () => [...turnos].sort((a, b) => DIAS.indexOf(a.dia) - DIAS.indexOf(b.dia) || a.desde.localeCompare(b.desde)),
+    [turnos],
+  );
 
   return (
     <>
@@ -46,16 +52,18 @@ export default function CatalogosPage() {
           lede="Franjas horarias del personal."
           singular="turno"
           collection="turnos"
-          items={turnos}
+          items={ordenados}
           fields={turnoFields}
           schema={turnoSchema}
-          toForm={(t) => ({ nombre: str(t?.nombre), desde: str(t?.desde), hasta: str(t?.hasta) })}
-          fromForm={(v, existing) => ({ id: existing?.id, nombre: v.nombre.trim(), desde: v.desde, hasta: v.hasta })}
+          toForm={(t) => ({ nombre: str(t?.nombre), dia: t?.dia ?? 'Lun', desde: str(t?.desde), hasta: str(t?.hasta) })}
+          fromForm={(v, existing) => ({ id: existing?.id, nombre: v.nombre.trim(), dia: v.dia as DiaSemana, desde: v.desde, hasta: v.hasta })}
           renderItem={(t) => (
             <>
-              <h3>{t.nombre}</h3>
+              <h3>
+                {t.dia} · {t.nombre}
+              </h3>
               <small>
-                {t.desde} a {t.hasta} · {profesores.filter((p) => p.idTurno === t.id).length} profesores
+                {t.desde} a {t.hasta} · {profesores.filter((p) => p.turnos.includes(t.id)).length} profesores
               </small>
             </>
           )}

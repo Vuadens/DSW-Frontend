@@ -7,22 +7,17 @@ import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
 import { Pill } from '../../components/common/Tile';
 import { TODAY, fullName } from '../../lib/format';
-import { asSchema, email, optionalDate, optionalText, required, str, toId, toOptions, withEmpty, date } from '../../lib/forms';
+import { MODULOS_DEMO } from '../../lib/features';
+import { asSchema, date, optionalDate, persona, str, toId, toOptions } from '../../lib/forms';
 import type { Socio } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
 
 const schema = asSchema(
   z.object({
-    nombre: required,
-    apellido: required,
-    dni: z.string().trim().regex(/^\d{7,9}$/, 'El DNI debe tener entre 7 y 9 números'),
-    email,
-    telefono: optionalText,
-    direccion: optionalText,
-    fechaNac: optionalDate,
+    ...persona,
     fechaAlta: date,
     fechaBaja: optionalDate,
-    idPlan: z.string(),
+    idPlan: z.string().min(1, 'Elegí un plan'),
   }),
 );
 
@@ -35,9 +30,7 @@ export default function SociosPage() {
       { name: 'nombre', label: 'Nombre', type: 'text', autoComplete: 'off' },
       { name: 'apellido', label: 'Apellido', type: 'text', autoComplete: 'off' },
       { name: 'dni', label: 'DNI', type: 'text' },
-      { name: 'email', label: 'Correo electrónico', type: 'email' },
       { name: 'telefono', label: 'Teléfono', type: 'text' },
-      { name: 'direccion', label: 'Dirección', type: 'text' },
       { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date' },
       { name: 'fechaAlta', label: 'Fecha de alta', type: 'date' },
       { name: 'fechaBaja', label: 'Fecha de baja', type: 'date', hint: 'Dejala vacía si el socio sigue activo.' },
@@ -45,7 +38,7 @@ export default function SociosPage() {
         name: 'idPlan',
         label: 'Plan',
         type: 'select',
-        options: withEmpty(toOptions(planes, (p) => p.nombre), 'Sin plan'),
+        options: [{ value: '', label: 'Elegí un plan' }, ...toOptions(planes, (p) => p.nombre)],
       },
     ],
     [planes],
@@ -60,14 +53,12 @@ export default function SociosPage() {
       items={socios}
       fields={fields}
       schema={schema}
-      searchText={(s) => `${s.nombre} ${s.apellido} ${s.dni} ${s.email}`}
+      searchText={(s) => `${s.nombre} ${s.apellido} ${s.dni}`}
       toForm={(s) => ({
         nombre: str(s?.nombre),
         apellido: str(s?.apellido),
         dni: str(s?.dni),
-        email: str(s?.email),
         telefono: str(s?.telefono),
-        direccion: str(s?.direccion),
         fechaNac: str(s?.fechaNac),
         fechaAlta: s?.fechaAlta ?? TODAY,
         fechaBaja: str(s?.fechaBaja),
@@ -75,28 +66,32 @@ export default function SociosPage() {
       })}
       fromForm={(v, existing) => ({
         id: existing?.id,
+        email: existing?.email,
         nombre: v.nombre.trim(),
         apellido: v.apellido.trim(),
         dni: v.dni.trim(),
-        email: v.email.trim(),
         telefono: v.telefono.trim(),
-        direccion: v.direccion.trim(),
         fechaNac: v.fechaNac,
         fechaAlta: v.fechaAlta,
         fechaBaja: v.fechaBaja,
         idPlan: toId(v.idPlan),
       })}
-      renderActions={(s) => {
-        const balance = useDataStore.getState().cuotas.filter((c) => c.idSocio === s.id && estadoCuota(c) !== 'pagada').reduce((sum, c) => sum + c.valor, 0);
-        return <Link className="btn line sm" to={`/app/finanzas?socio=${s.id}`}>{balance ? `Cuotas ${fmt(balance)}` : 'Cuotas al día'}</Link>;
-      }}
+      renderActions={
+        MODULOS_DEMO
+          ? (s) => {
+              const balance = useDataStore.getState().cuotas.filter((c) => c.idSocio === s.id && estadoCuota(c) !== 'pagada').reduce((sum, c) => sum + c.valor, 0);
+              return <Link className="btn line sm" to={`/app/finanzas?socio=${s.id}`}>{balance ? `Cuotas ${fmt(balance)}` : 'Cuotas al día'}</Link>;
+            }
+          : undefined
+      }
       renderItem={(s) => {
         const plan = planes.find((p) => p.id === s.idPlan);
         return (
           <>
             <h3>{fullName(s.nombre, s.apellido)}</h3>
             <small>
-              DNI {s.dni} · {s.email}
+              DNI {s.dni}
+              {s.telefono ? ` · ${s.telefono}` : ''}
             </small>
             <small>
               {plan ? plan.nombre : 'Sin plan'}
