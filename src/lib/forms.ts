@@ -36,3 +36,12 @@ export const withEmpty = (options: Option[], emptyLabel: string): Option[] => [{
 export const toId = (value: string) => (value === '' ? null : Number(value));
 export const toIds = (values: string[]) => values.map(Number);
 export const str = (value: unknown) => (value === null || value === undefined ? '' : String(value));
+
+/** Campos de Persona, con las mismas reglas que el backend. */
+export const persona = {
+  nombre: required,
+  apellido: required,
+  dni: z.string().trim().regex(/^\d{7,9}$/, 'El DNI debe tener entre 7 y 9 números'),
+  telefono: z.string().trim().min(6, 'Ingresá un teléfono válido'),
+  fechaNac: date,
+};

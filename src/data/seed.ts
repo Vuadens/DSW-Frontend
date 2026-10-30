@@ -11,6 +11,7 @@ import type {
   Socio,
   Turno,
 } from '../models';
+import { DIAS } from '../lib/format';
 
 export const INGRESOS_BASE = 7850000;
 export const EGRESOS = { docentes: 3450000, reparaciones: 470000 };
@@ -28,10 +29,19 @@ export const seedPlanes = (): Plan[] => [
   { id: 3, nombre: 'Musculación Libre', tipo: 'ESTANDAR', precio: 36000, clasesPorPeriodo: null, descripcion: '' },
 ];
 
-export const seedTurnos = (): Turno[] => [
-  { id: 1, nombre: 'Mañana', desde: '07:00', hasta: '15:00' },
-  { id: 2, nombre: 'Tarde / Noche', desde: '15:00', hasta: '23:00' },
-];
+const FRANJAS = [
+  { nombre: 'Mañana', desde: '07:00', hasta: '13:00' },
+  { nombre: 'Tarde', desde: '13:00', hasta: '19:00' },
+  { nombre: 'Noche', desde: '19:00', hasta: '23:00' },
+] as const;
+
+/** Igual que el backend: mañana, tarde y noche para cada día de la semana. */
+export const seedTurnos = (): Turno[] =>
+  DIAS.flatMap((dia, d) => FRANJAS.map((franja, f) => ({ id: d * FRANJAS.length + f + 1, dia, ...franja })));
+
+/** Turnos de lunes a viernes de las franjas indicadas (0 mañana, 1 tarde, 2 noche). */
+const turnosSemana = (...franjas: number[]) =>
+  DIAS.slice(0, 5).flatMap((_, d) => franjas.map((f) => d * FRANJAS.length + f + 1));
 
 export const seedMateriales = (): Material[] => [
   { id: 1, descripcion: 'Kettlebells', stock: 12 },
@@ -59,9 +69,8 @@ export const seedSocios = (): Socio[] =>
     apellido,
     dni,
     email,
-    telefono: '',
-    direccion: '',
-    fechaNac: '',
+    telefono: '1100000000',
+    fechaNac: '1995-01-01',
     fechaAlta,
     fechaBaja: '',
     idPlan,
@@ -70,20 +79,21 @@ export const seedSocios = (): Socio[] =>
 export const seedProfesores = (): Profesor[] =>
   (
     [
-      [1, 'Marcos', 'Benítez', 'Coordinador y preparador físico', 1, null, 'marcos.benitez@hadesgym.com', '+54 9 11 4521-8890', [{ desde: '2026-08-01', valor: 910000 }, { desde: '2026-09-01', valor: 950000 }]],
-      [2, 'Sofía', 'Rossi', 'Instructora de Spinning y HIIT', 2, 1, 'sofia.rossi@hadesgym.com', '+54 9 11 5874-1233', [{ desde: '2026-09-01', valor: 780000 }]],
-      [3, 'Matías', 'Gómez', 'Especialista en Musculación y Fuerza', 2, 1, 'matias.gomez@hadesgym.com', '+54 9 11 6398-0044', [{ desde: '2026-09-01', valor: 820000 }]],
-      [4, 'Valentina', 'Paz', 'Instructora de Yoga y Postura', 1, 1, 'valentina.paz@hadesgym.com', '+54 9 11 3109-7765', [{ desde: '2026-09-01', valor: 720000 }]],
+      [1, 'Marcos', 'Benítez', '28450111', 'Coordinador y preparador físico', [0], 'marcos.benitez@hadesgym.com', '1145218890', [{ desde: '2026-08-01', valor: 910000 }, { desde: '2026-09-01', valor: 950000 }]],
+      [2, 'Sofía', 'Rossi', '33120458', 'Instructora de Spinning y HIIT', [1, 2], 'sofia.rossi@hadesgym.com', '1158741233', [{ desde: '2026-09-01', valor: 780000 }]],
+      [3, 'Matías', 'Gómez', '31987220', 'Especialista en Musculación y Fuerza', [1, 2], 'matias.gomez@hadesgym.com', '1163980044', [{ desde: '2026-09-01', valor: 820000 }]],
+      [4, 'Valentina', 'Paz', '35004127', 'Instructora de Yoga y Postura', [0], 'valentina.paz@hadesgym.com', '1131097765', [{ desde: '2026-09-01', valor: 720000 }]],
     ] as const
-  ).map(([id, nombre, apellido, cargo, idTurno, idSupervisor, email, telefono, sueldos]) => ({
+  ).map(([id, nombre, apellido, dni, cargo, franjas, email, telefono, sueldos]) => ({
     id,
+    dni,
     nombre,
     apellido,
     cargo,
-    idTurno,
-    idSupervisor,
+    turnos: turnosSemana(...franjas),
     email,
     telefono,
+    fechaNac: '1990-01-01',
     sueldos: [...sueldos],
   }));
 

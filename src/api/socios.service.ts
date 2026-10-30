@@ -1,54 +1,57 @@
 import type { Socio } from '../models';
+import { dateOnly } from '../lib/format';
 import { httpClient } from './httpClient';
 
-interface SocioDto {
-  idSocio: number;
-  DNI: string;
-  apellido: string;
+export interface PersonaDto {
+  dni: string;
   nombre: string;
-  email: string;
+  apellido: string;
   telefono: string;
-  direccion: string;
-  fecha_baja: string | null;
-  fecha_nac: string;
+  fechaNac: string;
+}
+
+interface SocioDto {
+  idPersona: number;
+  fechaAlta: string;
+  fechaBaja: string | null;
+  planId: number;
+  persona: PersonaDto;
 }
 
 type SocioInput = Omit<Socio, 'id'>;
 
-const dateOnly = (iso: string | null | undefined) => (iso ? iso.slice(0, 10) : '');
+const fromDto = (dto: SocioDto): Socio => ({
+  id: dto.idPersona,
+  dni: dto.persona.dni,
+  nombre: dto.persona.nombre,
+  apellido: dto.persona.apellido,
+  telefono: dto.persona.telefono,
+  fechaNac: dateOnly(dto.persona.fechaNac),
+  fechaAlta: dateOnly(dto.fechaAlta),
+  fechaBaja: dateOnly(dto.fechaBaja),
+  idPlan: dto.planId,
+});
 
-/** El plan y la fecha de alta todavía no existen en el backend: se conservan los datos locales. */
-const fromDto = (dto: SocioDto, local?: Partial<Socio>): Socio => ({
-  id: dto.idSocio,
-  dni: dto.DNI,
-  nombre: dto.nombre,
-  apellido: dto.apellido,
-  email: dto.email,
-  telefono: dto.telefono,
-  direccion: dto.direccion,
-  fechaNac: dateOnly(dto.fecha_nac),
-  fechaBaja: dateOnly(dto.fecha_baja),
-  fechaAlta: local?.fechaAlta ?? '',
-  idPlan: local?.idPlan ?? null,
+export const personaToDto = (persona: PersonaDto) => ({
+  dni: persona.dni,
+  nombre: persona.nombre,
+  apellido: persona.apellido,
+  telefono: persona.telefono,
+  fechaNac: persona.fechaNac,
 });
 
 const toDto = (socio: SocioInput) => ({
-  DNI: socio.dni,
-  nombre: socio.nombre,
-  apellido: socio.apellido,
-  email: socio.email,
-  telefono: socio.telefono,
-  direccion: socio.direccion,
-  fecha_nac: socio.fechaNac ? new Date(socio.fechaNac).toISOString() : new Date(0).toISOString(),
-  fecha_baja: socio.fechaBaja ? new Date(socio.fechaBaja).toISOString() : null,
+  ...personaToDto(socio),
+  planId: socio.idPlan ?? undefined,
+  fechaAlta: socio.fechaAlta || undefined,
+  fechaBaja: socio.fechaBaja || null,
 });
 
 export const sociosService = {
-  list: async () => (await httpClient.get<SocioDto[]>('/socios')).data.map((dto) => fromDto(dto)),
-  create: async (socio: SocioInput) =>
-    fromDto((await httpClient.post<SocioDto>('/socios', toDto(socio))).data, socio),
+  list: async () => (await httpClient.get<SocioDto[]>('/socios')).data.map(fromDto),
+  create: async (socio: SocioInput) => fromDto((await httpClient.post<SocioDto>('/socios', toDto(socio))).data),
   update: async (id: number, socio: SocioInput) =>
-    fromDto((await httpClient.put<SocioDto>(`/socios/${id}`, toDto(socio))).data, socio),
+    fromDto((await httpClient.patch<SocioDto>(`/socios/${id}`, toDto(socio))).data),
   remove: async (id: number) => {
     await httpClient.delete(`/socios/${id}`);
   },

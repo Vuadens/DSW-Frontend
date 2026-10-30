@@ -2,106 +2,105 @@ import { useMemo } from 'react';
 import { z } from 'zod';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
-import { TODAY, fmt, fullName } from '../../lib/format';
-import { asSchema, email, optionalText, positiveNumber, required, str, toId, toOptions, withEmpty } from '../../lib/forms';
-import type { Profesor } from '../../models';
+import { DIAS, TODAY, fmt, fullName } from '../../lib/format';
+import { MODULOS_DEMO } from '../../lib/features';
+import { asSchema, ids, persona, positiveNumber, required, str, toIds } from '../../lib/forms';
+import type { Profesor, Turno } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
 
+// El sueldo no tiene backend todavía (HistoricoSueldo): solo se edita en modo demo.
 const schema = asSchema(
   z.object({
-    nombre: required,
-    apellido: required,
+    ...persona,
     cargo: required,
-    email,
-    telefono: optionalText,
-    idTurno: z.string(),
-    idSupervisor: z.string(),
-    sueldo: positiveNumber,
+    turnos: ids,
+    ...(MODULOS_DEMO ? { sueldo: positiveNumber } : {}),
   }),
 );
 
 const sueldoVigente = (p: Profesor) => p.sueldos[p.sueldos.length - 1]?.valor ?? 0;
 
+const turnoLabel = (t: Turno) => `${t.dia} ${t.nombre} (${t.desde} a ${t.hasta})`;
+
+const ordenTurno = (a: Turno, b: Turno) => DIAS.indexOf(a.dia) - DIAS.indexOf(b.dia) || a.desde.localeCompare(b.desde);
+
 export default function ProfesoresPage() {
   const profesores = useDataStore((s) => s.profesores);
   const turnos = useDataStore((s) => s.turnos);
+  const ordenados = useMemo(() => [...turnos].sort(ordenTurno), [turnos]);
 
   const fields = useMemo<FieldDef[]>(
     () => [
       { name: 'nombre', label: 'Nombre', type: 'text' },
       { name: 'apellido', label: 'Apellido', type: 'text' },
-      { name: 'cargo', label: 'Cargo', type: 'text' },
-      { name: 'email', label: 'Correo electrónico', type: 'email' },
+      { name: 'dni', label: 'DNI', type: 'text' },
       { name: 'telefono', label: 'Teléfono', type: 'text' },
+      { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date' },
+      { name: 'cargo', label: 'Cargo', type: 'text' },
       {
-        name: 'idTurno',
-        label: 'Turno',
-        type: 'select',
-        options: withEmpty(toOptions(turnos, (t) => `${t.nombre} (${t.desde} a ${t.hasta})`), 'Sin turno'),
+        name: 'turnos',
+        label: 'Turnos en los que trabaja',
+        type: 'multi',
+        options: ordenados.map((t) => ({ value: String(t.id), label: turnoLabel(t) })),
       },
-      {
-        name: 'idSupervisor',
-        label: 'Supervisor',
-        type: 'select',
-        options: withEmpty(toOptions(profesores, (p) => fullName(p.nombre, p.apellido)), 'Sin supervisor'),
-      },
-      { name: 'sueldo', label: 'Sueldo vigente', type: 'number', hint: 'Si cambia, se guarda como nuevo valor histórico.' },
+      ...(MODULOS_DEMO
+        ? [{ name: 'sueldo', label: 'Sueldo vigente', type: 'number' as const, hint: 'Si cambia, se guarda como nuevo valor histórico.' }]
+        : []),
     ],
-    [turnos, profesores],
+    [ordenados],
   );
 
   return (
     <EntityPage<Profesor>
       title="Profesores"
-      lede="Equipo, turnos, supervisores y sueldos."
+      lede={MODULOS_DEMO ? 'Equipo, turnos y sueldos.' : 'Equipo y turnos de trabajo.'}
       singular="profesor"
       collection="profesores"
       items={profesores}
       fields={fields}
       schema={schema}
-      searchText={(p) => `${p.nombre} ${p.apellido} ${p.cargo} ${p.email}`}
+      searchText={(p) => `${p.nombre} ${p.apellido} ${p.dni} ${p.cargo}`}
       toForm={(p) => ({
         nombre: str(p?.nombre),
         apellido: str(p?.apellido),
-        cargo: str(p?.cargo),
-        email: str(p?.email),
+        dni: str(p?.dni),
         telefono: str(p?.telefono),
-        idTurno: str(p?.idTurno),
-        idSupervisor: str(p?.idSupervisor),
+        fechaNac: str(p?.fechaNac),
+        cargo: str(p?.cargo),
+        turnos: (p?.turnos ?? []).map(String),
         sueldo: p ? String(sueldoVigente(p)) : '',
       })}
       fromForm={(v, existing) => {
-        const sueldo = Number(v.sueldo);
         const historial = existing?.sueldos ?? [];
+        const sueldo = Number(v.sueldo);
         const sueldos =
-          historial.length && sueldoVigente(existing as Profesor) === sueldo
+          !MODULOS_DEMO || (historial.length && sueldoVigente(existing as Profesor) === sueldo)
             ? historial
             : [...historial, { desde: TODAY, valor: sueldo }];
-        const supervisor = toId(v.idSupervisor);
         return {
           id: existing?.id,
+          email: existing?.email,
           nombre: v.nombre.trim(),
           apellido: v.apellido.trim(),
-          cargo: v.cargo.trim(),
-          email: v.email.trim(),
+          dni: v.dni.trim(),
           telefono: v.telefono.trim(),
-          idTurno: toId(v.idTurno),
-          idSupervisor: supervisor === existing?.id ? null : supervisor,
+          fechaNac: v.fechaNac,
+          cargo: v.cargo.trim(),
+          turnos: toIds(v.turnos),
           sueldos,
         };
       }}
       renderItem={(p) => {
-        const turno = turnos.find((t) => t.id === p.idTurno);
-        const supervisor = profesores.find((x) => x.id === p.idSupervisor);
+        const propios = ordenados.filter((t) => p.turnos.includes(t.id));
         return (
           <>
             <h3>{fullName(p.nombre, p.apellido)}</h3>
             <small>
-              {p.cargo} · {p.email}
+              {p.cargo} · DNI {p.dni}
             </small>
             <small>
-              {turno ? `Turno ${turno.nombre}` : 'Sin turno'}
-              {supervisor ? ` · Supervisa ${fullName(supervisor.nombre, supervisor.apellido)}` : ''} · Sueldo {fmt(sueldoVigente(p))}
+              {propios.length ? `Turnos: ${propios.map((t) => `${t.dia} ${t.nombre}`).join(', ')}` : 'Sin turnos'}
+              {MODULOS_DEMO ? ` · Sueldo ${fmt(sueldoVigente(p))}` : ''}
             </small>
           </>
         );

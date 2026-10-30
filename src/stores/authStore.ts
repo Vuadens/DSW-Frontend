@@ -68,7 +68,7 @@ interface AuthState {
 const findAccount = (role: Role, email: string) => {
   const data = useDataStore.getState();
   const list = role === 'admin' ? data.administradores : role === 'profesor' ? data.profesores : data.socios;
-  return list.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
+  return list.find((u) => u.email?.toLowerCase() === email.trim().toLowerCase());
 };
 
 /** Modo demo: busca la cuenta por email en los tres roles, o por DNI entre los socios. */
@@ -124,7 +124,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   register: async (input) => {
     const data = useDataStore.getState();
-    if (data.socios.some((s) => s.email.toLowerCase() === input.email.trim().toLowerCase())) {
+    if (data.socios.some((s) => s.email?.toLowerCase() === input.email.trim().toLowerCase())) {
       return 'Ya existe una cuenta con ese correo.';
     }
     if (data.socios.some((s) => s.dni === input.dni.trim())) return 'Ya existe una cuenta con ese DNI.';
@@ -134,7 +134,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       dni: input.dni.trim(),
       email: input.email.trim(),
       telefono: '',
-      direccion: '',
       fechaNac: '',
       fechaAlta: '2026-10-11',
       fechaBaja: '',
@@ -221,7 +220,7 @@ export const useCurrentUser = (): CurrentUser | null => {
   if (session.role === 'profesor') {
     const p = data.profesores.find((x) => x.id === session.userId);
     return p
-      ? { role: 'profesor', id: p.id, nombre: p.nombre, apellido: p.apellido, email: p.email, detalle: p.cargo }
+      ? { role: 'profesor', id: p.id, nombre: p.nombre, apellido: p.apellido, email: p.email ?? '', detalle: p.cargo }
       : null;
   }
   const s = data.socios.find((x) => x.id === session.userId);
@@ -232,7 +231,7 @@ export const useCurrentUser = (): CurrentUser | null => {
     id: s.id,
     nombre: s.nombre,
     apellido: s.apellido,
-    email: s.email,
+    email: s.email ?? '',
     detalle: plan ? plan.nombre : 'Sin plan',
   };
 };

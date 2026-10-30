@@ -28,17 +28,15 @@ export default function PerfilPage() {
   const profileFields: FieldDef[] = [
     { name: 'nombre', label: 'Nombre', type: 'text', autoComplete: 'given-name' },
     { name: 'apellido', label: 'Apellido', type: 'text', autoComplete: 'family-name' },
-    { name: 'email', label: 'Correo', type: 'email', autoComplete: 'email' },
     { name: 'telefono', label: 'Teléfono', type: 'text', autoComplete: 'tel' },
-    ...(user.role === 'socio' ? [{ name: 'direccion', label: 'Dirección', type: 'text' as const, autoComplete: 'street-address' }] : []),
   ];
   const profileSchema = z.object({
     nombre: z.string().trim().min(2, 'Ingresá tu nombre.'),
     apellido: z.string().trim().min(2, 'Ingresá tu apellido.'),
-    email: z.string().trim().email('Ingresá un correo válido.'),
     telefono: z.string().trim().min(6, 'Ingresá un teléfono válido.'),
-    ...(user.role === 'socio' ? { direccion: z.string().trim().min(3, 'Ingresá tu dirección.') } : {}),
   });
+  // En modo conectado solo el profesor edita sus datos: los socios los actualiza el administrador.
+  const puedeEditar = MODULOS_DEMO || user.role === 'profesor';
   const current = user.role === 'socio'
     ? useDataStore.getState().socios.find((item) => item.id === user.id)
     : useDataStore.getState().profesores.find((item) => item.id === user.id);
@@ -55,7 +53,7 @@ export default function PerfilPage() {
         <div className="profile-detail"><small>Correo</small><strong>{user.email}</strong></div>
         <div className="profile-detail"><small>Información</small><strong>{user.detalle}{plan ? ` · Plan ${plan.nombre}` : ''}</strong></div>
         <div className="profile-actions">
-          {(MODULOS_DEMO || user.role !== 'admin') && <button type="button" className="btn sm" onClick={() => setEditOpen(true)}>Editar mis datos</button>}
+          {puedeEditar && <button type="button" className="btn sm" onClick={() => setEditOpen(true)}>Editar mis datos</button>}
           {MODULOS_DEMO && <button type="button" className="btn line sm" onClick={() => setPhotoOpen(true)}>{photo ? 'Cambiar foto' : 'Subir foto'}</button>}
           {MODULOS_DEMO && photo && <button type="button" className="btn line sm" onClick={async () => { await removePhoto(); showToast('Foto eliminada.'); }}>Quitar foto</button>}
         </div>
@@ -70,9 +68,7 @@ export default function PerfilPage() {
       defaultValues={{
         nombre: current?.nombre ?? user.nombre,
         apellido: current?.apellido ?? user.apellido,
-        email: current?.email ?? user.email,
-        telefono: current && 'telefono' in current ? current.telefono : '',
-        ...(user.role === 'socio' && current && 'direccion' in current ? { direccion: current.direccion } : {}),
+        telefono: current?.telefono ?? '',
       }}
       onClose={() => setEditOpen(false)}
       onSubmit={async (values) => {
