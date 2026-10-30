@@ -26,6 +26,7 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean; demo?: boole
   ],
   profesor: [
     { to: '/app', label: MODULOS_DEMO ? 'Sueldo y proyección' : 'Mi agenda', end: true },
+    { to: '/app/socios', label: 'Socios por plan' },
     { to: '/app/perfil', label: 'Actualizar mis datos' },
   ],
   socio: [

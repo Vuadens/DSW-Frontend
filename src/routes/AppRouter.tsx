@@ -22,6 +22,7 @@ const Maquinas = lazy(() => import('../pages/admin/MaquinasPage'));
 const Catalogos = lazy(() => import('../pages/admin/CatalogosPage'));
 
 const ProfesorHome = lazy(() => import('../pages/profesor/ProfesorHome'));
+const SociosPorPlan = lazy(() => import('../pages/profesor/SociosPorPlanPage'));
 
 const SocioHome = lazy(() => import('../pages/socio/SocioHome'));
 const Reservar = lazy(() => import('../pages/socio/ReservarPage'));
@@ -48,7 +49,7 @@ export const AppRouter = () => (
         <Route path="/app" element={<Shell />}>
           <Route index element={<ByRole admin={<AdminHome />} profesor={<ProfesorHome />} socio={<SocioHome />} />} />
           <Route path="perfil" element={<Perfil />} />
-          <Route path="socios" element={<ByRole admin={<Socios />} />} />
+          <Route path="socios" element={<ByRole admin={<Socios />} profesor={<SociosPorPlan />} />} />
           <Route path="profesores" element={<ByRole admin={<Profesores />} />} />
           <Route path="planes" element={demo(<ByRole admin={<Planes />} />)} />
           <Route path="actividades" element={<ByRole admin={<Actividades />} />} />

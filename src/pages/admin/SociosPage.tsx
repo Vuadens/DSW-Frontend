@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { ESTADO_CUOTA_SOCIO_LABEL, useSociosPorPlan } from '../../hooks/useSociosPorPlan';
 import { Link } from 'react-router-dom';
 import { fmt } from '../../lib/format';
 import { estadoCuota } from '../../lib/rules';
@@ -24,6 +25,13 @@ const schema = asSchema(
 export default function SociosPage() {
   const socios = useDataStore((s) => s.socios);
   const planes = useDataStore((s) => s.planes);
+  // Listado por plan: nombre, apellido, DNI y, para el admin, el estado de la cuota del mes.
+  const [planFiltro, setPlanFiltro] = useState<number | null>(null);
+  const porPlan = useSociosPorPlan(planFiltro, true);
+  const visibles = useMemo(
+    () => (planFiltro === null ? socios : socios.filter((s) => s.idPlan === planFiltro)),
+    [socios, planFiltro],
+  );
 
   const fields = useMemo<FieldDef[]>(
     () => [
@@ -50,7 +58,22 @@ export default function SociosPage() {
       lede="Altas, bajas y plan de cada socio."
       singular="socio"
       collection="socios"
-      items={socios}
+      items={visibles}
+      header={
+        <>
+          <div className="tabs" role="group" aria-label="Filtrar por plan">
+            <button type="button" aria-pressed={planFiltro === null} onClick={() => setPlanFiltro(null)}>
+              Todos
+            </button>
+            {planes.map((p) => (
+              <button key={p.id} type="button" aria-pressed={planFiltro === p.id} onClick={() => setPlanFiltro(p.id)}>
+                {p.nombre}
+              </button>
+            ))}
+          </div>
+          {porPlan.error && <p className="err" role="alert">{porPlan.error}</p>}
+        </>
+      }
       fields={fields}
       schema={schema}
       searchText={(s) => `${s.nombre} ${s.apellido} ${s.dni}`}
@@ -86,6 +109,7 @@ export default function SociosPage() {
       }
       renderItem={(s) => {
         const plan = planes.find((p) => p.id === s.idPlan);
+        const estado = porPlan.socios.find((x) => x.id === s.id)?.estadoCuota;
         return (
           <>
             <h3>{fullName(s.nombre, s.apellido)}</h3>
@@ -97,6 +121,12 @@ export default function SociosPage() {
               {plan ? plan.nombre : 'Sin plan'}
               {s.fechaBaja ? ' · ' : ''}
               {s.fechaBaja && <Pill kind="mora">De baja</Pill>}
+              {estado && (
+                <>
+                  {' · '}
+                  <Pill kind={estado === 'AL_DIA' ? 'ok' : 'mora'}>{ESTADO_CUOTA_SOCIO_LABEL[estado]}</Pill>
+                </>
+              )}
             </small>
           </>
         );
