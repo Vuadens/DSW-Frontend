@@ -64,9 +64,10 @@ export default function MisReservasPage() {
         message="Vas a liberar tu lugar en esta clase."
         confirmLabel="Cancelar reserva"
         onCancel={() => setCancelling(null)}
-        onConfirm={() => {
-          if (cancelling) cancelarReserva(cancelling.id);
-          showToast('Reserva cancelada.');
+        onConfirm={async () => {
+          if (!cancelling) return;
+          const result = await cancelarReserva(cancelling.id);
+          showToast(result.error ?? 'Reserva cancelada.');
           setCancelling(null);
         }}
       />
