@@ -149,9 +149,14 @@ export default function ClasesAdminPage() {
     [actividades, profesores],
   );
 
+  // Listado de clases filtrado por día de la semana, con horario, cupo, inscriptos y disponibles.
+  const [dia, setDia] = useState<DiaSemana | null>(null);
   const sorted = useMemo(
-    () => [...clases].sort((a, b) => DIAS.indexOf(a.dia) - DIAS.indexOf(b.dia) || a.desde.localeCompare(b.desde)),
-    [clases],
+    () =>
+      clases
+        .filter((c) => dia === null || c.dia === dia)
+        .sort((a, b) => DIAS.indexOf(a.dia) - DIAS.indexOf(b.dia) || a.desde.localeCompare(b.desde)),
+    [clases, dia],
   );
 
   return (
@@ -162,6 +167,18 @@ export default function ClasesAdminPage() {
         singular="clase"
         collection="clases"
         items={sorted}
+        header={
+          <div className="tabs" role="group" aria-label="Filtrar por día">
+            <button type="button" aria-pressed={dia === null} onClick={() => setDia(null)}>
+              Todos
+            </button>
+            {DIAS.map((d) => (
+              <button key={d} type="button" aria-pressed={dia === d} onClick={() => setDia(d)}>
+                {d}
+              </button>
+            ))}
+          </div>
+        }
         fields={fields}
         schema={schema}
         toForm={(c) => ({
@@ -192,6 +209,7 @@ export default function ClasesAdminPage() {
         renderItem={(c) => {
           const actividad = actividades.find((a) => a.id === c.idActividad);
           const profesor = profesores.find((p) => p.id === c.idProfesor);
+          const inscriptos = ocupados(c, inscripciones);
           return (
             <>
               <h3>{actividad?.nombre ?? 'Actividad eliminada'}</h3>
@@ -199,7 +217,7 @@ export default function ClasesAdminPage() {
                 {c.dia} · {horario(c.desde, c.hasta)} · {profesor ? fullName(profesor.nombre, profesor.apellido) : 'Sin profesor'}
               </small>
               <small>
-                Cupo {ocupados(c, inscripciones)} de {c.cupo}
+                Cupo {c.cupo} · {inscriptos} inscriptos · {Math.max(0, c.cupo - inscriptos)} disponibles ({longDate(claseFecha(c.dia))})
               </small>
             </>
           );
