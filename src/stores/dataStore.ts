@@ -17,6 +17,7 @@ import { actividadesService } from '../api/actividades.service';
 import { planesService } from '../api/planes.service';
 import { profesoresService } from '../api/profesores.service';
 import { sociosService } from '../api/socios.service';
+import { turnosService } from '../api/turnos.service';
 import { PERIODO_ACTUAL, TODAY, claseFecha, nextId } from '../lib/format';
 import { adicionalPorClase, clasesDelPeriodo, puedeReservar } from '../lib/rules';
 import type {
@@ -78,10 +79,9 @@ const blockers = (state: Collections, key: CollectionKey, id: number): string | 
     case 'planes':
       return state.socios.some((s) => s.idPlan === id) ? 'Hay socios con este plan.' : null;
     case 'turnos':
-      return state.profesores.some((p) => p.idTurno === id) ? 'Hay profesores asignados a este turno.' : null;
+      return state.profesores.some((p) => p.turnos.includes(id)) ? 'Hay profesores asignados a este turno.' : null;
     case 'profesores':
-      if (state.clases.some((c) => c.idProfesor === id)) return 'El profesor tiene clases asignadas.';
-      return state.profesores.some((p) => p.idSupervisor === id) ? 'El profesor supervisa a otros profesores.' : null;
+      return state.clases.some((c) => c.idProfesor === id) ? 'El profesor tiene clases asignadas.' : null;
     case 'actividades':
       return state.clases.some((c) => c.idActividad === id) ? 'La actividad tiene clases programadas.' : null;
     case 'materiales':
@@ -132,20 +132,17 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (!API_ENABLED) return {};
     set({ loading: true });
     try {
-      // Solo lo que el rol puede ver: el socio no accede al listado de profesores.
-      const [planes, socios, profesores, actividades] = await Promise.all([
+      // Solo lo que el rol puede ver: el socio no accede a profesores ni a turnos.
+      const staff = role !== 'socio';
+      const [planes, socios, profesores, turnos, actividades] = await Promise.all([
         planesService.list(),
         sociosService.list(),
-        role === 'socio' ? Promise.resolve([] as Profesor[]) : profesoresService.list(),
+        staff ? profesoresService.list() : Promise.resolve([] as Profesor[]),
+        staff ? turnosService.list() : Promise.resolve([] as Turno[]),
         actividadesService.list(),
       ]);
-      set((state) => ({
-        planes,
-        socios: socios.map((item) => ({ ...item, idPlan: state.socios.find((local) => local.id === item.id)?.idPlan ?? item.idPlan })),
-        profesores: profesores.map((item) => ({ ...item, email: state.profesores.find((local) => local.id === item.id)?.email ?? item.email, sueldos: state.profesores.find((local) => local.id === item.id)?.sueldos ?? item.sueldos })),
-        actividades: actividades.map((item) => ({ ...item, materiales: state.actividades.find((local) => local.id === item.id)?.materiales ?? item.materiales, maquinas: state.actividades.find((local) => local.id === item.id)?.maquinas ?? item.maquinas })),
-        loading: false,
-      }));
+      // Los ids del backend no coinciden con los del seed local: no se mezclan datos.
+      set({ planes, socios, profesores, turnos, actividades, loading: false });
       return {};
     } catch (error) {
       set({ loading: false });
