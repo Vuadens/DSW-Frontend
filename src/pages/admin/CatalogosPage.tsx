@@ -4,6 +4,7 @@ import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
 import { asSchema, intNumber, required, str, time } from '../../lib/forms';
 import { DIAS } from '../../lib/format';
+import { MODULOS_DEMO } from '../../lib/features';
 import type { DiaSemana, Material, Turno } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
 
@@ -37,14 +38,17 @@ export default function CatalogosPage() {
 
   return (
     <>
-      <div className="tabs" role="group" aria-label="Catálogo">
-        <button type="button" aria-pressed={tab === 'turnos'} onClick={() => setTab('turnos')}>
-          Turnos
-        </button>
-        <button type="button" aria-pressed={tab === 'materiales'} onClick={() => setTab('materiales')}>
-          Materiales
-        </button>
-      </div>
+      {/* Materiales todavía no tiene backend: en modo conectado solo se ven los turnos. */}
+      {MODULOS_DEMO && (
+        <div className="tabs" role="group" aria-label="Catálogo">
+          <button type="button" aria-pressed={tab === 'turnos'} onClick={() => setTab('turnos')}>
+            Turnos
+          </button>
+          <button type="button" aria-pressed={tab === 'materiales'} onClick={() => setTab('materiales')}>
+            Materiales
+          </button>
+        </div>
+      )}
       {tab === 'turnos' ? (
         <EntityPage<Turno>
           key="turnos"
