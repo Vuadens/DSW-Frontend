@@ -1,8 +1,15 @@
 import type { DiaSemana } from '../models';
+import { API_ENABLED } from '../api/httpClient';
 
-/** Fecha "de hoy" de la demo, para que los datos sembrados sean coherentes. */
-export const TODAY = '2026-10-11';
-export const PERIODO_ACTUAL = '2026-10';
+const isoLocal = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+/**
+ * Fecha "de hoy". En modo demo es fija, para que los datos sembrados sean coherentes;
+ * en modo conectado es la fecha real.
+ */
+export const TODAY = API_ENABLED ? isoLocal(new Date()) : '2026-10-11';
+export const PERIODO_ACTUAL = TODAY.slice(0, 7);
 export const ADICIONAL_CLASES = 0.05;
 
 export const fmt = (n: number) => '$\u00a0' + Math.round(n).toLocaleString('es-AR');
@@ -42,13 +49,25 @@ export const DIAS: DiaSemana[] = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'D
 
 const WEEK_START_DAY = 12;
 
-/** Fecha de la semana en curso que corresponde a un día de dictado. */
+/** Próxima fecha (desde hoy, inclusive) que cae en ese día de la semana. */
+const proximaFecha = (dia: DiaSemana) => {
+  const hoy = new Date(`${TODAY}T12:00:00`);
+  const lunesPrimero = (hoy.getDay() + 6) % 7;
+  hoy.setDate(hoy.getDate() + ((DIAS.indexOf(dia) - lunesPrimero + 7) % 7));
+  return isoLocal(hoy);
+};
+
+/**
+ * Fecha en la que se dicta la clase de ese día. En modo demo, la semana del 12 de octubre;
+ * en modo conectado, la próxima fecha desde hoy (como la calcula el backend).
+ */
 export const claseFecha = (dia: DiaSemana) => {
+  if (API_ENABLED) return proximaFecha(dia);
   const day = WEEK_START_DAY + DIAS.indexOf(dia);
   return `2026-10-${String(day).padStart(2, '0')}`;
 };
 
-export const diaNumero = (dia: DiaSemana) => WEEK_START_DAY + DIAS.indexOf(dia);
+export const diaNumero = (dia: DiaSemana) => Number(claseFecha(dia).slice(8, 10));
 
 export const diaLabel = (dia: DiaSemana) => `${dia} ${diaNumero(dia)}`;
 
