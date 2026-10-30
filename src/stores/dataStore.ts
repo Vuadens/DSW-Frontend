@@ -20,6 +20,7 @@ import { sociosService } from '../api/socios.service';
 import { turnosService } from '../api/turnos.service';
 import { clasesService } from '../api/clases.service';
 import { inscripcionesService } from '../api/inscripciones.service';
+import { maquinasService } from '../api/maquinas.service';
 import { PERIODO_ACTUAL, TODAY, claseFecha, nextId } from '../lib/format';
 import { adicionalPorClase, clasesDelPeriodo, puedeReservar } from '../lib/rules';
 import type {
@@ -75,6 +76,7 @@ const remotes: Partial<Record<CollectionKey, Remote>> = {
   actividades: actividadesService as unknown as Remote,
   turnos: turnosService as unknown as Remote,
   clases: clasesService as unknown as Remote,
+  maquinas: maquinasService as unknown as Remote,
 };
 
 /**
@@ -155,7 +157,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     try {
       // Solo lo que el rol puede ver: el socio no accede a profesores ni a turnos.
       const staff = role !== 'socio';
-      const [planes, socios, profesores, turnos, actividades, clases, inscripciones] = await Promise.all([
+      const [planes, socios, profesores, turnos, actividades, clases, inscripciones, maquinas] = await Promise.all([
         planesService.list(),
         sociosService.list(),
         staff ? profesoresService.list() : Promise.resolve([] as Profesor[]),
@@ -163,10 +165,11 @@ export const useDataStore = create<DataState>((set, get) => ({
         actividadesService.list(),
         clasesService.list(),
         inscripcionesService.list(),
+        role === 'admin' ? maquinasService.list() : Promise.resolve([] as Maquina[]),
       ]);
       // Los ids del backend no coinciden con los del seed local: no se mezclan datos.
-      // Cuotas, máquinas y materiales no tienen backend todavía: en modo conectado quedan vacíos.
-      set({ planes, socios, profesores, turnos, actividades, clases, inscripciones, cuotas: [], maquinas: [], materiales: [], loading: false });
+      // Cuotas y materiales no tienen backend todavía: en modo conectado quedan vacíos.
+      set({ planes, socios, profesores, turnos, actividades, clases, inscripciones, cuotas: [], maquinas, materiales: [], loading: false });
       return {};
     } catch (error) {
       set({ loading: false });

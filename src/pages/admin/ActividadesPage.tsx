@@ -28,7 +28,7 @@ export default function ActividadesPage() {
   const maquinas = useDataStore((s) => s.maquinas);
   const profesores = useDataStore((s) => s.profesores);
 
-  // Tipo, materiales, máquinas y profesores todavía no tienen backend: solo modo demo.
+  // Tipo, materiales y profesores todavía no tienen backend: solo modo demo.
   const fields = useMemo<FieldDef[]>(
     () => [
       { name: 'nombre', label: 'Nombre', type: 'text' },
@@ -51,7 +51,11 @@ export default function ActividadesPage() {
       ...(MODULOS_DEMO
         ? [
             { name: 'materiales', label: 'Materiales', type: 'multi' as const, options: toOptions(materiales, (m) => m.descripcion) },
-            { name: 'maquinas', label: 'Máquinas', type: 'multi' as const, options: toOptions(maquinas, (m) => m.nombre) },
+          ]
+        : []),
+      { name: 'maquinas', label: 'Máquinas', type: 'multi', options: toOptions(maquinas, (m) => m.nombre) },
+      ...(MODULOS_DEMO
+        ? [
             {
               name: 'profesores',
               label: 'Profesores',
@@ -108,6 +112,7 @@ export default function ActividadesPage() {
           <small>
             Cupo máximo {a.cupoMaximo} · Planes: {names(planes, a.planes, (p) => p.nombre)}
           </small>
+          <small>Máquinas: {names(maquinas, a.maquinas, (m) => m.nombre)}</small>
           {MODULOS_DEMO && <small>Profesores: {names(profesores, a.profesores, (p) => fullName(p.nombre, p.apellido))}</small>}
         </>
       )}

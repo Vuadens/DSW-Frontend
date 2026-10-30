@@ -145,7 +145,6 @@ export interface Maquina {
   id: number;
   nombre: string;
   tipo: string;
-  ubicacion: string;
   descripcion: string;
   estado: EstadoMaquina;
   mantenimientos: Mantenimiento[];
