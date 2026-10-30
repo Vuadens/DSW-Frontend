@@ -9,6 +9,7 @@ import { fullName } from '../lib/format';
 import { photoKey, useAuthStore, useCurrentUser } from '../stores/authStore';
 import { useDataStore } from '../stores/dataStore';
 import { useUiStore } from '../stores/uiStore';
+import { MODULOS_DEMO } from '../lib/features';
 
 const ROLE_LABEL = { admin: 'Administrador', profesor: 'Profesor', socio: 'Socio' } as const;
 
@@ -43,7 +44,7 @@ export default function PerfilPage() {
     : useDataStore.getState().profesores.find((item) => item.id === user.id);
 
   return <>
-    <PageHeader title="Tu perfil." lede="Podés cambiar tu foto y consultar tus datos." />
+    <PageHeader title="Tu perfil." lede={MODULOS_DEMO ? 'Podés cambiar tu foto y consultar tus datos.' : 'Consultá y actualizá tus datos.'} />
     <section className="profile-screen" aria-label="Datos personales">
       <div className="profile-portrait">
         <Avatar role={user.role} name={name} photo={photo} />
@@ -54,9 +55,9 @@ export default function PerfilPage() {
         <div className="profile-detail"><small>Correo</small><strong>{user.email}</strong></div>
         <div className="profile-detail"><small>Información</small><strong>{user.detalle}{plan ? ` · Plan ${plan.nombre}` : ''}</strong></div>
         <div className="profile-actions">
-          <button type="button" className="btn sm" onClick={() => setEditOpen(true)}>Editar mis datos</button>
-          <button type="button" className="btn line sm" onClick={() => setPhotoOpen(true)}>{photo ? 'Cambiar foto' : 'Subir foto'}</button>
-          {photo && <button type="button" className="btn line sm" onClick={async () => { await removePhoto(); showToast('Foto eliminada.'); }}>Quitar foto</button>}
+          {(MODULOS_DEMO || user.role !== 'admin') && <button type="button" className="btn sm" onClick={() => setEditOpen(true)}>Editar mis datos</button>}
+          {MODULOS_DEMO && <button type="button" className="btn line sm" onClick={() => setPhotoOpen(true)}>{photo ? 'Cambiar foto' : 'Subir foto'}</button>}
+          {MODULOS_DEMO && photo && <button type="button" className="btn line sm" onClick={async () => { await removePhoto(); showToast('Foto eliminada.'); }}>Quitar foto</button>}
         </div>
       </div>
     </section>

@@ -3,6 +3,7 @@ import { PageHeader, Tile, TileFooter } from '../../components/common/Tile';
 import { PERIODO_ACTUAL, fmt, longDate, TODAY } from '../../lib/format';
 import { estadoCuota } from '../../lib/rules';
 import { useDataStore } from '../../stores/dataStore';
+import { MODULOS_DEMO } from '../../lib/features';
 
 export default function AdminHome() {
   const { cuotas, socios, profesores, maquinas, clases, planes } = useDataStore();
@@ -15,8 +16,9 @@ export default function AdminHome() {
 
   return (
     <>
-      <PageHeader eyebrow={longDate(TODAY)} title="Mi panel." lede="El estado del gimnasio de un vistazo." actions={<Link className="btn line sm" to="/app/finanzas">Ver finanzas</Link>} />
+      <PageHeader eyebrow={longDate(TODAY)} title="Mi panel." lede="El estado del gimnasio de un vistazo." actions={MODULOS_DEMO ? <Link className="btn line sm" to="/app/finanzas">Ver finanzas</Link> : undefined} />
       <div className="tiles">
+        {MODULOS_DEMO && <>
         <Tile tone="green">
           <h3>Ingresos del mes</h3>
           <span className="num">{fmt(ingresos)}</span>
@@ -32,6 +34,7 @@ export default function AdminHome() {
           <span className="num">{fmt(ingresos - egresos)}</span>
           <p>Ingresos menos sueldos.</p>
         </Tile>
+        </>}
         <Tile tone="orange">
           <h3>Socios activos</h3>
           <span className="num">{activos.length}</span>
@@ -44,6 +47,7 @@ export default function AdminHome() {
             </Link>
           </TileFooter>
         </Tile>
+        {MODULOS_DEMO ? <>
         <Tile tone="red">
           <h3>Cuotas en mora</h3>
           <span className="num">{mora.length}</span>
@@ -64,6 +68,18 @@ export default function AdminHome() {
             </Link>
           </TileFooter>
         </Tile>
+        </> : (
+          <Tile tone="yellow">
+            <h3>Clases semanales</h3>
+            <span className="num">{clases.length}</span>
+            <p>Dictados programados.</p>
+            <TileFooter>
+              <Link to="/app/clases" className="btn sm">
+                Ver clases
+              </Link>
+            </TileFooter>
+          </Tile>
+        )}
       </div>
     </>
   );

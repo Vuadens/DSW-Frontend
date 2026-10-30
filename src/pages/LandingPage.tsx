@@ -5,6 +5,10 @@ import { fmt } from '../lib/format';
 import { useCurrentUser } from '../stores/authStore';
 import { useDataStore } from '../stores/dataStore';
 import { ThemeToggle } from '../components/common/ThemeToggle';
+import { MODULOS_DEMO } from '../lib/features';
+
+// En modo conectado no hay registro de cuentas: se ingresa con las cuentas creadas por el gimnasio.
+const REGISTRO = MODULOS_DEMO ? '/registro' : '/ingresar';
 
 const BLOCKS = ['var(--orange)', 'var(--green)', 'var(--purple)', 'var(--blue)'];
 
@@ -21,7 +25,7 @@ export default function LandingPage() {
           <Link to={user ? '/app' : '/ingresar'} className="btn line sm">
             {user ? 'Mi panel' : 'Ingresar'}
           </Link>
-          {!user && <Link to="/registro" className="btn sm">Crear cuenta</Link>}
+          {!user && <Link to={REGISTRO} className="btn sm">Crear cuenta</Link>}
         </nav>
       </header>
       <main>
@@ -29,7 +33,7 @@ export default function LandingPage() {
           <h1>Entrená sin vueltas.</h1>
           <p className="lede">Reservá clases, pagá tus cuotas y seguí tu plan desde un solo lugar.</p>
           <div className="row2">
-            <Link to="/registro" className="btn">
+            <Link to={REGISTRO} className="btn">
               Quiero asociarme
             </Link>
             <Link to="/ingresar" className="btn line">
@@ -51,7 +55,7 @@ export default function LandingPage() {
                 <h3>{plan.nombre}</h3>
                 <span className="num">{fmt(plan.precio)}</span>
                 <p>por mes</p>
-                <Link to={user ? '/app' : '/registro'} className="btn">Elegir plan</Link>
+                <Link to={user ? '/app' : REGISTRO} className="btn">Elegir plan</Link>
               </Tile>
             ))}
           </div>
@@ -64,7 +68,7 @@ export default function LandingPage() {
         </section>
         <section className="cta">
           <h2>Tu primera clase te espera.</h2>
-          <Link to="/registro" className="btn">
+          <Link to={REGISTRO} className="btn">
             Crear cuenta gratis
           </Link>
         </section>
