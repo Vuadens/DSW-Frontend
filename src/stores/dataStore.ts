@@ -32,6 +32,7 @@ import type {
   MetodoPago,
   Plan,
   Profesor,
+  Role,
   Socio,
   Turno,
 } from '../models';
@@ -100,7 +101,7 @@ const blockers = (state: Collections, key: CollectionKey, id: number): string | 
 
 interface DataState extends Collections {
   loading: boolean;
-  hydrate: () => Promise<Result>;
+  hydrate: (role: Role) => Promise<Result>;
   save: <K extends CollectionKey>(key: K, draft: Draft<K>) => Promise<Result>;
   remove: (key: CollectionKey, id: number) => Promise<Result>;
   reservar: (socioId: number, claseId: number) => Result & { adicional?: number };
@@ -127,14 +128,15 @@ export const useDataStore = create<DataState>((set, get) => ({
   maquinas: seedMaquinas(),
   loading: false,
 
-  hydrate: async () => {
+  hydrate: async (role) => {
     if (!API_ENABLED) return {};
     set({ loading: true });
     try {
+      // Solo lo que el rol puede ver: el socio no accede al listado de profesores.
       const [planes, socios, profesores, actividades] = await Promise.all([
         planesService.list(),
         sociosService.list(),
-        profesoresService.list(),
+        role === 'socio' ? Promise.resolve([] as Profesor[]) : profesoresService.list(),
         actividadesService.list(),
       ]);
       set((state) => ({
