@@ -57,7 +57,7 @@ export function SocioDetalleDialog({ socioId, conCuotas, onClose }: Props) {
               <p>
                 <Pill kind={detalle.estadoCuota === 'AL_DIA' ? 'ok' : 'mora'}>{ESTADO_CUOTA_SOCIO_LABEL[detalle.estadoCuota]}</Pill>
               </p>
-              <p className="lede" style={{ marginTop: 8, fontSize: 15 }}>
+              <p className="lede" style={{ margin: '8px 0 12px', fontSize: 15 }}>
                 {detalle.ultimoMesPagado ? `Último mes pagado: ${periodoLabel(detalle.ultimoMesPagado)}` : 'Todavía no registra pagos.'}
               </p>
               <div className="rows flush">
