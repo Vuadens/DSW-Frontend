@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { ClaseDetalleDialog } from '../../components/common/ClaseDetalleDialog';
 import { PageHeader, Tile, TileFooter } from '../../components/common/Tile';
 import { DIAS, diaNumero, fmt, fullName, horario } from '../../lib/format';
 import { estaInscripto, ocupados, puedeReservar } from '../../lib/rules';
@@ -20,6 +21,7 @@ export default function ReservarPage() {
   const inscripciones = useDataStore((s) => s.inscripciones);
   const reservar = useDataStore((s) => s.reservar);
   const showToast = useUiStore((s) => s.showToast);
+  const [detalleId, setDetalleId] = useState<number | null>(null);
 
   const socio = socios.find((s) => s.id === user?.id);
   const plan = planes.find((p) => p.id === socio?.idPlan);
@@ -87,6 +89,9 @@ export default function ReservarPage() {
                         Reservar
                       </button>
                     )}
+                    <button type="button" className="btn line sm" style={{ marginLeft: 8 }} onClick={() => setDetalleId(c.id)}>
+                      Detalle
+                    </button>
                     {!inscripto && !check.permitido && <p style={{ marginTop: 8 }}>{check.motivo}</p>}
                     {!inscripto && check.permitido && check.adicional > 0 && (
                       <p style={{ marginTop: 8 }}>Adicional: {fmt(check.adicional)}</p>
@@ -98,6 +103,7 @@ export default function ReservarPage() {
           </div>
         </section>
       ))}
+      <ClaseDetalleDialog claseId={detalleId} onClose={() => setDetalleId(null)} />
     </>
   );
 }

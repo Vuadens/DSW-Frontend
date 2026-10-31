@@ -1,5 +1,6 @@
-import type { Socio } from '../models';
+import type { Cuota, Socio } from '../models';
 import { dateOnly } from '../lib/format';
+import { cuotaFromDto, type CuotaDto } from './cuotas.service';
 import { httpClient } from './httpClient';
 
 export interface PersonaDto {
@@ -60,8 +61,33 @@ interface SocioPorPlanDto {
   estadoCuota?: EstadoCuotaSocio;
 }
 
+interface SocioDetalleDto extends SocioDto {
+  plan: { nombre: string };
+  cuotas: CuotaDto[];
+  estadoCuotas: { estado: EstadoCuotaSocio; ultimoMesPagado: string | null };
+}
+
+export interface SocioDetalle {
+  socio: Socio;
+  plan: string;
+  cuotas: Cuota[];
+  estadoCuota: EstadoCuotaSocio;
+  /** Período "2026-10". */
+  ultimoMesPagado: string | null;
+}
+
 export const sociosService = {
   list: async () => (await httpClient.get<SocioDto[]>('/socios')).data.map(fromDto),
+  detalle: async (id: number): Promise<SocioDetalle> => {
+    const { data } = await httpClient.get<SocioDetalleDto>(`/socios/${id}`);
+    return {
+      socio: fromDto(data),
+      plan: data.plan.nombre,
+      cuotas: data.cuotas.map(cuotaFromDto),
+      estadoCuota: data.estadoCuotas.estado,
+      ultimoMesPagado: data.estadoCuotas.ultimoMesPagado?.slice(0, 7) ?? null,
+    };
+  },
   /** Listado de socios de un plan: nombre, apellido y DNI; el admin recibe además el estado de la cuota del mes. */
   porPlan: async (planId: number) =>
     (await httpClient.get<SocioPorPlanDto[]>('/socios', { params: { planId } })).data.map((dto) => ({

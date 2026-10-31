@@ -2,7 +2,7 @@ import type { Cuota } from '../models';
 import { finDeMes, isoLocal } from '../lib/format';
 import { httpClient } from './httpClient';
 
-interface CuotaDto {
+export interface CuotaDto {
   idCuota: number;
   mesAnio: string;
   fechaPago: string;
@@ -11,7 +11,7 @@ interface CuotaDto {
 }
 
 /** En el backend solo existen las cuotas cobradas y no registran el método de pago. */
-const fromDto = (dto: CuotaDto): Cuota => {
+export const cuotaFromDto = (dto: CuotaDto): Cuota => {
   const periodo = dto.mesAnio.slice(0, 7);
   return {
     id: dto.idCuota,
@@ -29,7 +29,7 @@ const fromDto = (dto: CuotaDto): Cuota => {
 
 export const cuotasService = {
   /** El admin recibe todas las cuotas; el socio, solo las propias. */
-  list: async () => (await httpClient.get<CuotaDto[]>('/cuotas')).data.map(fromDto),
+  list: async () => (await httpClient.get<CuotaDto[]>('/cuotas')).data.map(cuotaFromDto),
   registrarCobro: async (socioId: number, mes: string) =>
-    fromDto((await httpClient.post<CuotaDto>('/cuotas', { socioId, mes })).data),
+    cuotaFromDto((await httpClient.post<CuotaDto>('/cuotas', { socioId, mes })).data),
 };

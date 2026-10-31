@@ -1153,6 +1153,9 @@ button.av:focus-visible::after {
 .profile-detail { display: grid; gap: 6px; padding: 20px 0; border-bottom: 1px solid var(--line); }
 .profile-detail small { color: var(--muted); }
 .profile-detail strong { font-size: 20px; font-weight: 500; }
+.detalle { display: grid; gap: 12px; margin: 0 0 16px; }
+.detalle dt { color: var(--muted); font-size: 14px; }
+.detalle dd { margin: 2px 0 0; font-weight: 500; overflow-wrap: anywhere; }
 .profile-actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 24px; }
 .finance-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .finance-cards .t { min-height: 240px; }

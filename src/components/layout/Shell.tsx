@@ -16,7 +16,7 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean; demo?: boole
     { to: '/app', label: 'Mi panel', end: true },
     { to: '/app/socios', label: 'Socios' },
     { to: '/app/profesores', label: 'Profesores' },
-    { to: '/app/planes', label: 'Planes', demo: true },
+    { to: '/app/planes', label: 'Planes' },
     { to: '/app/cuotas', label: 'Cuotas' },
     { to: '/app/finanzas', label: 'Finanzas', demo: true },
     { to: '/app/actividades', label: 'Actividades' },
