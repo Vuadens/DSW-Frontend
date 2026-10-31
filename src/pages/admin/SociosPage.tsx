@@ -6,6 +6,7 @@ import { estadoCuota } from '../../lib/rules';
 import { z } from 'zod';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
+import { SocioDetalleDialog } from '../../components/common/SocioDetalleDialog';
 import { Pill } from '../../components/common/Tile';
 import { TODAY, fullName } from '../../lib/format';
 import { MODULOS_DEMO } from '../../lib/features';
@@ -29,6 +30,7 @@ export default function SociosPage() {
   // Listado por plan: nombre, apellido, DNI y, para el admin, el estado de la cuota del mes.
   const [planFiltro, setPlanFiltro] = useState<number | null>(null);
   const porPlan = useSociosPorPlan(planFiltro, true);
+  const [detalleId, setDetalleId] = useState<number | null>(null);
   const visibles = useMemo(
     () => (planFiltro === null ? socios : socios.filter((s) => s.idPlan === planFiltro)),
     [socios, planFiltro],
@@ -55,6 +57,7 @@ export default function SociosPage() {
   );
 
   return (
+    <>
     <EntityPage<Socio>
       title="Socios"
       lede="Altas, bajas y plan de cada socio."
@@ -103,14 +106,17 @@ export default function SociosPage() {
         fechaBaja: v.fechaBaja,
         idPlan: toId(v.idPlan),
       })}
-      renderActions={
-        MODULOS_DEMO
-          ? (s) => {
-              const balance = useDataStore.getState().cuotas.filter((c) => c.idSocio === s.id && estadoCuota(c) !== 'pagada').reduce((sum, c) => sum + c.valor, 0);
-              return <Link className="btn line sm" to={`/app/finanzas?socio=${s.id}`}>{balance ? `Cuotas ${fmt(balance)}` : 'Cuotas al día'}</Link>;
-            }
-          : undefined
-      }
+      renderActions={(s) => {
+        const balance = useDataStore.getState().cuotas.filter((c) => c.idSocio === s.id && estadoCuota(c) !== 'pagada').reduce((sum, c) => sum + c.valor, 0);
+        return (
+          <>
+            <button type="button" className="btn line sm" onClick={() => setDetalleId(s.id)}>
+              Detalle
+            </button>
+            {MODULOS_DEMO && <Link className="btn line sm" to={`/app/finanzas?socio=${s.id}`}>{balance ? `Cuotas ${fmt(balance)}` : 'Cuotas al día'}</Link>}
+          </>
+        );
+      }}
       renderItem={(s) => {
         const plan = planes.find((p) => p.id === s.idPlan);
         const estado = porPlan.socios.find((x) => x.id === s.id)?.estadoCuota;
@@ -136,5 +142,7 @@ export default function SociosPage() {
         );
       }}
     />
+    <SocioDetalleDialog socioId={detalleId} conCuotas onClose={() => setDetalleId(null)} />
+    </>
   );
 }

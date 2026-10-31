@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Paginacion, usePaginacion } from '../../components/common/Paginacion';
+import { SocioDetalleDialog } from '../../components/common/SocioDetalleDialog';
 import { PageHeader } from '../../components/common/Tile';
 import { useSociosPorPlan } from '../../hooks/useSociosPorPlan';
 import { fullName } from '../../lib/format';
@@ -12,6 +13,7 @@ export default function SociosPorPlanPage() {
   const elegido = planId ?? planes[0]?.id ?? null;
   const { socios, error } = useSociosPorPlan(elegido, false);
   const { visibles, paginacion } = usePaginacion(socios, elegido);
+  const [detalleId, setDetalleId] = useState<number | null>(null);
 
   return (
     <>
@@ -34,11 +36,17 @@ export default function SociosPorPlanPage() {
                 <h3>{fullName(s.nombre, s.apellido)}</h3>
                 <small>DNI {s.dni}</small>
               </div>
+              <div className="rb">
+                <button type="button" className="btn line sm" onClick={() => setDetalleId(s.id)}>
+                  Detalle
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
       <Paginacion {...paginacion} />
+      <SocioDetalleDialog socioId={detalleId} conCuotas={false} onClose={() => setDetalleId(null)} />
     </>
   );
 }

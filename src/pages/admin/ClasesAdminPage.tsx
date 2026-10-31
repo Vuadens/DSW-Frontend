@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { z } from 'zod';
+import { ClaseDetalleDialog } from '../../components/common/ClaseDetalleDialog';
 import { Dialog } from '../../components/common/Dialog';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
@@ -128,6 +129,7 @@ export default function ClasesAdminPage() {
   const profesores = useDataStore((s) => s.profesores);
   const inscripciones = useDataStore((s) => s.inscripciones);
   const [viendo, setViendo] = useState<Clase | null>(null);
+  const [detalleId, setDetalleId] = useState<number | null>(null);
 
   const fields = useMemo<FieldDef[]>(
     () => [
@@ -208,9 +210,14 @@ export default function ClasesAdminPage() {
         })}
         itemClassName={(c) => `class-card class-${c.idActividad % 4}`}
         renderActions={(c) => (
-          <button type="button" className="btn line sm" onClick={() => setViendo(c)}>
-            Inscriptos
-          </button>
+          <>
+            <button type="button" className="btn line sm" onClick={() => setDetalleId(c.id)}>
+              Detalle
+            </button>
+            <button type="button" className="btn line sm" onClick={() => setViendo(c)}>
+              Inscriptos
+            </button>
+          </>
         )}
         renderItem={(c) => {
           const actividad = actividades.find((a) => a.id === c.idActividad);
@@ -230,6 +237,7 @@ export default function ClasesAdminPage() {
         }}
       />
       <InscriptosDialog clase={viendo} onClose={() => setViendo(null)} />
+      <ClaseDetalleDialog claseId={detalleId} onClose={() => setDetalleId(null)} />
     </>
   );
 }
