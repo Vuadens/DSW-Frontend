@@ -24,6 +24,7 @@
 ## Contenido
 
 - [Sobre el proyecto](#sobre-el-proyecto)
+- [Cómo lo desarrollamos](#cómo-lo-desarrollamos)
 - [Funcionalidades](#funcionalidades)
 - [Capturas](#capturas)
 - [Instalación desde cero](#instalación-desde-cero)
@@ -36,9 +37,23 @@
 
 ## Sobre el proyecto
 
-Hades nació como trabajo práctico de **Desarrollo de Software** en la UTN Facultad Regional Rosario. La [consigna](https://github.com/Vuadens/Hades-Gym-Manager) pide una aplicación full stack con frontend y backend independientes, comunicados por una API. El grupo eligió un problema concreto: centralizar la administración de un gimnasio, con control de cupos, cuotas y actividades.
+Hades es nuestro trabajo práctico de **Desarrollo de Software** en la UTN Facultad Regional Rosario. La [consigna](https://github.com/Vuadens/Hades-Gym-Manager) nos pedía una aplicación full stack con frontend y backend independientes, comunicados por una API. Elegimos un problema concreto: centralizar la administración de un gimnasio, con control de cupos, cuotas y actividades.
 
-Este repositorio contiene el frontend. La API, la base de datos y el modelo de dominio están en [DSW-Backend](https://github.com/Vuadens/DSW-Backend).
+En este repositorio está el frontend. La API, la base de datos y el modelo de dominio están en [DSW-Backend](https://github.com/Vuadens/DSW-Backend).
+
+## Cómo lo desarrollamos
+
+**Empezamos por la experiencia de cada rol.** Armamos primero los flujos de administrador, profesor y socio con datos en memoria. Así definimos las pantallas antes de conectarlas, y de ese trabajo surgió el modo demo que todavía mantenemos.
+
+**Conectamos el backend por partes.** Escribimos una especificación con las decisiones del equipo y la dividimos en una pull request por bloque: login, socios y profesores, actividades y turnos, clases e inscripciones, y listados. Arrancamos por el login porque sin él no podíamos conectar nada más.
+
+**Preferimos ocultar antes que simular.** En modo conectado, un módulo sin backend no se muestra. Así, todo lo que aparece en pantalla trabaja con datos reales.
+
+**El backend tiene la última palabra.** El frontend anticipa las reglas de reserva para responder al instante, pero las valida la API. Si una regla cambia o alguien saltea la interfaz, la API sigue rechazando lo que no corresponde.
+
+**Ajustamos el frontend al modelo de dominio.** Cuando socios y profesores pasaron a heredar de Persona, actualizamos modelos, servicios y formularios, y quitamos los campos que ya no existían.
+
+**Cerramos el alcance de regularidad.** Por último sumamos el cobro de cuotas, el CRUD de planes y el detalle de socios y clases con datos pedidos al backend.
 
 ## Funcionalidades
 
@@ -48,7 +63,7 @@ Este repositorio contiene el frontend. La API, la base de datos y el modelo de d
 | **Profesor** | Ver su agenda, actualizar sus datos y consultar los socios de cada plan, sin acceder al estado de sus cuotas. |
 | **Socio** | Reservar y cancelar clases, y consultar sus reservas, sus cuotas y sus datos. |
 
-Además:
+Además, incorporamos:
 
 - Inicio de sesión con email o DNI, y sesión recuperada al recargar la página.
 - Contraseña inicial con cambio obligatorio en el primer ingreso.
@@ -114,7 +129,7 @@ Además:
 
 ### Requisitos
 
-- [Node.js](https://nodejs.org). El proyecto se probó con la versión 24.
+- [Node.js](https://nodejs.org). Lo probamos con la versión 24.
 - [pnpm](https://pnpm.io): `npm install -g pnpm`
 - [Git](https://git-scm.com)
 - [DSW-Backend](https://github.com/Vuadens/DSW-Backend) corriendo, si vas a usar el modo conectado.
@@ -155,7 +170,7 @@ Para probar la interfaz sin backend, dejá `VITE_API_URL=` vacío en el paso 4 y
 
 ## Modos de ejecución
 
-`VITE_API_URL` define el modo al iniciar o compilar la aplicación. Después de cambiarla, reiniciá `pnpm dev`.
+Mantuvimos dos modos para poder mostrar la interfaz completa sin instalar nada y, a la vez, trabajar contra el sistema real. `VITE_API_URL` define el modo al iniciar o compilar la aplicación. Después de cambiarla, reiniciá `pnpm dev`.
 
 | | Demo | Conectado |
 |---|---|---|
@@ -194,7 +209,7 @@ Las cuentas son las del seed del backend, con la contraseña `DEMO_PASSWORD`, qu
 | `pnpm dev` | Servidor de desarrollo en `http://localhost:5173` |
 | `pnpm build` | Verificación de tipos y compilación de producción |
 | `pnpm preview` | Sirve la compilación de producción |
-| `pnpm test` | Pruebas con Vitest. Todavía no hay pruebas en el repositorio |
+| `pnpm test` | Pruebas con Vitest. Todavía no escribimos pruebas |
 
 ## Estructura
 
@@ -224,6 +239,8 @@ src/
 | `Port 5173 is in use` | Cerrá el otro proceso o entrá a la URL que indica la terminal |
 
 ## Equipo
+
+Desarrollamos Hades entre cuatro:
 
 - Juan Manuel Hidalgo Alcain
 - Joaquín Emiliano Maza
