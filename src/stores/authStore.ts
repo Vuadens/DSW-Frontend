@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { photosService } from '../api/photos.service';
 import { API_ENABLED, apiErrorMessage, getAuthToken, onUnauthorized, setAuthToken } from '../api/httpClient';
-import { authService, type Perfil } from '../api/auth.service';
+import { authService, type Perfil, type Registro } from '../api/auth.service';
 import { mailerService } from '../api/mailer.service';
+import { TODAY } from '../lib/format';
 import type { Role } from '../models';
 import { useDataStore } from './dataStore';
 
@@ -21,6 +22,9 @@ export interface CurrentUser {
 }
 
 const key = (role: Role, id: number) => `${role}:${id}`;
+
+/** Modo demo: igual que en el backend, las cuentas nuevas nacen con los últimos 6 dígitos del DNI. */
+const passwordInicial = (dni: string) => dni.slice(-6);
 
 const DEMO_PASSWORDS: Record<string, string> = {
   'admin:1': 'admin123',
@@ -46,18 +50,15 @@ interface AuthState {
   perfil: Perfil | null;
   /** true mientras se recupera la sesión desde el token guardado. */
   restoring: boolean;
+  /** Tiene la contraseña inicial: no puede operar hasta cambiarla. */
+  debeCambiarPassword: boolean;
   passwords: Record<string, string>;
   photos: Record<string, string>;
   /** El identificador es el email o el DNI. */
   login: (identificador: string, password: string) => Promise<string | null>;
   restore: () => Promise<void>;
-  register: (input: {
-    nombre: string;
-    apellido: string;
-    dni: string;
-    email: string;
-    password: string;
-  }) => Promise<string | null>;
+  register: (input: Registro) => Promise<string | null>;
+  cambiarPassword: (actual: string, nueva: string) => Promise<string | null>;
   logout: () => void;
   requestReset: (email: string) => Promise<void>;
   resetPassword: (role: Role, email: string, password: string) => Promise<string | null>;
@@ -86,6 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   perfil: null,
   restoring: API_ENABLED && Boolean(getAuthToken()),
+  debeCambiarPassword: false,
   passwords: DEMO_PASSWORDS,
   photos: {},
 
@@ -94,7 +96,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       try {
         setAuthToken(await authService.login(identificador.trim(), password));
         const perfil = await authService.me();
-        set({ perfil, session: { role: perfil.role, userId: perfil.personaId } });
+        set({
+          perfil,
+          session: { role: perfil.role, userId: perfil.personaId },
+          debeCambiarPassword: perfil.debeCambiarPassword,
+        });
         return null;
       } catch (error) {
         setAuthToken(null);
@@ -103,11 +109,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     const account = findDemoAccount(identificador);
     const stored = account ? get().passwords[key(account.role, account.user.id)] : undefined;
-    if (!account || !stored || stored !== password) return 'Email, DNI o contraseña incorrectos.';
+    const esperada = stored ?? (account && 'dni' in account.user ? passwordInicial(account.user.dni) : undefined);
+    if (!account || !esperada || esperada !== password) return 'Email, DNI o contraseña incorrectos.';
     if (account.role === 'socio' && 'fechaBaja' in account.user && account.user.fechaBaja) {
       return 'Tu cuenta fue dada de baja.';
     }
-    set({ session: { role: account.role, userId: account.user.id } });
+    set({ session: { role: account.role, userId: account.user.id }, debeCambiarPassword: !stored });
     return null;
   },
 
@@ -115,7 +122,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!API_ENABLED || !getAuthToken()) return set({ restoring: false });
     try {
       const perfil = await authService.me();
-      set({ perfil, session: { role: perfil.role, userId: perfil.personaId }, restoring: false });
+      set({
+        perfil,
+        session: { role: perfil.role, userId: perfil.personaId },
+        debeCambiarPassword: perfil.debeCambiarPassword,
+        restoring: false,
+      });
     } catch {
       setAuthToken(null);
       set({ perfil: null, session: null, restoring: false });
@@ -123,35 +135,50 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   register: async (input) => {
+    if (API_ENABLED) {
+      try {
+        await authService.registrar(input);
+        return null;
+      } catch (error) {
+        return apiErrorMessage(error, 'No pudimos crear la cuenta.');
+      }
+    }
     const data = useDataStore.getState();
     if (data.socios.some((s) => s.email?.toLowerCase() === input.email.trim().toLowerCase())) {
       return 'Ya existe una cuenta con ese correo.';
     }
     if (data.socios.some((s) => s.dni === input.dni.trim())) return 'Ya existe una cuenta con ese DNI.';
-    const result = await data.save('socios', {
-      nombre: input.nombre.trim(),
-      apellido: input.apellido.trim(),
-      dni: input.dni.trim(),
-      email: input.email.trim(),
-      telefono: '',
-      fechaNac: '',
-      fechaAlta: '2026-10-11',
-      fechaBaja: '',
-      idPlan: null,
+    const result = await data.save('socios', { ...input, fechaAlta: TODAY, fechaBaja: '' });
+    return result.error ?? null;
+  },
+
+  cambiarPassword: async (actual, nueva) => {
+    if (API_ENABLED) {
+      try {
+        setAuthToken(await authService.cambiarPassword(actual, nueva));
+        set({ debeCambiarPassword: false });
+        return null;
+      } catch (error) {
+        return apiErrorMessage(error, 'No pudimos cambiar la contraseña.');
+      }
+    }
+    const { session, passwords } = get();
+    if (!session) return 'Sesión expirada.';
+    const socio = useDataStore.getState().socios.find((s) => s.id === session.userId);
+    const profesor = useDataStore.getState().profesores.find((p) => p.id === session.userId);
+    const dni = session.role === 'socio' ? socio?.dni : profesor?.dni;
+    const esperada = passwords[key(session.role, session.userId)] ?? (dni && passwordInicial(dni));
+    if (actual !== esperada) return 'La contraseña actual es incorrecta';
+    set({
+      passwords: { ...passwords, [key(session.role, session.userId)]: nueva },
+      debeCambiarPassword: false,
     });
-    if (result.error) return result.error;
-    const created = useDataStore.getState().socios.find((s) => s.email === input.email.trim());
-    if (!created) return 'No pudimos crear la cuenta.';
-    set((state) => ({
-      passwords: { ...state.passwords, [key('socio', created.id)]: input.password },
-      session: { role: 'socio', userId: created.id },
-    }));
     return null;
   },
 
   logout: () => {
     setAuthToken(null);
-    set({ session: null, perfil: null });
+    set({ session: null, perfil: null, debeCambiarPassword: false });
   },
 
   requestReset: async (email) => {
@@ -195,7 +222,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 }));
 
 // Token vencido o inválido: se cierra la sesión.
-onUnauthorized(() => useAuthStore.setState({ session: null, perfil: null }));
+onUnauthorized(() => useAuthStore.setState({ session: null, perfil: null, debeCambiarPassword: false }));
 
 export const photoKey = key;
 

@@ -4,9 +4,11 @@ import type { ZodType } from 'zod';
 import { ConfirmDialog } from './Dialog';
 import type { FieldDef } from './Fields';
 import { FormDrawer } from './FormDrawer';
+import { Paginacion, usePaginacion } from './Paginacion';
 import { PageHeader } from './Tile';
 import { useDataStore, type CollectionKey } from '../../stores/dataStore';
 import { useUiStore } from '../../stores/uiStore';
+import { normalizar } from '../../lib/format';
 
 interface Props<T extends { id: number }> {
   title: string;
@@ -25,6 +27,8 @@ interface Props<T extends { id: number }> {
   canEdit?: boolean;
   /** Contenido adicional bajo el encabezado, por ejemplo resúmenes. */
   header?: ReactNode;
+  /** Filtro externo aplicado a `items`: al cambiar, la lista vuelve a la primera página. */
+  filtro?: unknown;
   itemClassName?: (item: T) => string;
 }
 
@@ -42,6 +46,7 @@ export function EntityPage<T extends { id: number }>({
   searchText,
   renderActions,
   header,
+  filtro,
   itemClassName,
 }: Props<T>) {
   const save = useDataStore((s) => s.save);
@@ -54,10 +59,11 @@ export function EntityPage<T extends { id: number }>({
   const [deleteError, setDeleteError] = useState<string>();
 
   const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = normalizar(query.trim());
     if (!q || !searchText) return items;
-    return items.filter((item) => searchText(item).toLowerCase().includes(q));
+    return items.filter((item) => normalizar(searchText(item)).includes(q));
   }, [items, query, searchText]);
+  const { visibles, paginacion } = usePaginacion(visible, `${query}|${filtro}`);
 
   const existing = editing && editing !== 'new' ? editing : undefined;
   const defaults = useMemo(() => toForm(existing), [existing, toForm]);
@@ -89,7 +95,7 @@ export function EntityPage<T extends { id: number }>({
         <p className="none">{items.length === 0 ? `Todavía no hay ${title.toLowerCase()}.` : 'Sin resultados.'}</p>
       ) : (
         <div className="rows">
-          {visible.map((item) => (
+          {visibles.map((item) => (
             <div key={item.id} className={`row ${itemClassName?.(item) ?? ''}`}>
               <div>{renderItem(item)}</div>
               <div className="rb">
@@ -112,6 +118,7 @@ export function EntityPage<T extends { id: number }>({
           ))}
         </div>
       )}
+      <Paginacion {...paginacion} />
 
       <FormDrawer
         open={editing !== null}

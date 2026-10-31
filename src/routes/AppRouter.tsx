@@ -9,6 +9,7 @@ const Landing = lazy(() => import('../pages/LandingPage'));
 const Login = lazy(() => import('../pages/auth/LoginPage'));
 const Register = lazy(() => import('../pages/auth/RegisterPage'));
 const Recover = lazy(() => import('../pages/auth/RecoverPage'));
+const CambiarPassword = lazy(() => import('../pages/auth/CambiarPasswordPage'));
 const Perfil = lazy(() => import('../pages/PerfilPage'));
 
 const AdminHome = lazy(() => import('../pages/admin/AdminHome'));
@@ -16,10 +17,12 @@ const Socios = lazy(() => import('../pages/admin/SociosPage'));
 const Profesores = lazy(() => import('../pages/admin/ProfesoresPage'));
 const Planes = lazy(() => import('../pages/admin/PlanesPage'));
 const Finanzas = lazy(() => import('../pages/admin/FinanzasPage'));
+const CuotasAdmin = lazy(() => import('../pages/admin/CuotasAdminPage'));
 const Actividades = lazy(() => import('../pages/admin/ActividadesPage'));
 const ClasesAdmin = lazy(() => import('../pages/admin/ClasesAdminPage'));
 const Maquinas = lazy(() => import('../pages/admin/MaquinasPage'));
-const Catalogos = lazy(() => import('../pages/admin/CatalogosPage'));
+const Turnos = lazy(() => import('../pages/admin/TurnosPage'));
+const Materiales = lazy(() => import('../pages/admin/MaterialesPage'));
 
 const ProfesorHome = lazy(() => import('../pages/profesor/ProfesorHome'));
 const SociosPorPlan = lazy(() => import('../pages/profesor/SociosPorPlanPage'));
@@ -44,8 +47,9 @@ export const AppRouter = () => (
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/ingresar" element={<Login />} />
-        <Route path="/registro" element={MODULOS_DEMO ? <Register /> : <Navigate to="/ingresar" replace />} />
+        <Route path="/registro" element={<Register />} />
         <Route path="/recuperar" element={MODULOS_DEMO ? <Recover /> : <Navigate to="/ingresar" replace />} />
+        <Route path="/cambiar-password" element={<CambiarPassword />} />
         <Route path="/app" element={<Shell />}>
           <Route index element={<ByRole admin={<AdminHome />} profesor={<ProfesorHome />} socio={<SocioHome />} />} />
           <Route path="perfil" element={<Perfil />} />
@@ -54,8 +58,9 @@ export const AppRouter = () => (
           <Route path="planes" element={demo(<ByRole admin={<Planes />} />)} />
           <Route path="actividades" element={<ByRole admin={<Actividades />} />} />
           <Route path="maquinas" element={demo(<ByRole admin={<Maquinas />} />)} />
-          <Route path="catalogos" element={<ByRole admin={<Catalogos />} />} />
-          <Route path="cuotas" element={demo(<ByRole socio={<MisCuotas />} />)} />
+          <Route path="turnos" element={<ByRole admin={<Turnos />} />} />
+          <Route path="materiales" element={demo(<ByRole admin={<Materiales />} />)} />
+          <Route path="cuotas" element={<ByRole admin={<CuotasAdmin />} socio={<MisCuotas />} />} />
           <Route path="finanzas" element={demo(<ByRole admin={<Finanzas />} />)} />
           <Route path="clases" element={<ByRole admin={<ClasesAdmin />} socio={<Reservar />} />} />
           <Route path="reservas" element={<ByRole socio={<MisReservas />} />} />

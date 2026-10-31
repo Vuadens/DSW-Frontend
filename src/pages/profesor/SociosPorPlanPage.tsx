@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Paginacion, usePaginacion } from '../../components/common/Paginacion';
 import { PageHeader } from '../../components/common/Tile';
 import { useSociosPorPlan } from '../../hooks/useSociosPorPlan';
 import { fullName } from '../../lib/format';
@@ -10,6 +11,7 @@ export default function SociosPorPlanPage() {
   const [planId, setPlanId] = useState<number | null>(planes[0]?.id ?? null);
   const elegido = planId ?? planes[0]?.id ?? null;
   const { socios, error } = useSociosPorPlan(elegido, false);
+  const { visibles, paginacion } = usePaginacion(socios, elegido);
 
   return (
     <>
@@ -26,7 +28,7 @@ export default function SociosPorPlanPage() {
         <p className="none">No hay socios en este plan.</p>
       ) : (
         <div className="rows flush">
-          {socios.map((s) => (
+          {visibles.map((s) => (
             <div key={s.id} className="row">
               <div>
                 <h3>{fullName(s.nombre, s.apellido)}</h3>
@@ -36,6 +38,7 @@ export default function SociosPorPlanPage() {
           ))}
         </div>
       )}
+      <Paginacion {...paginacion} />
     </>
   );
 }

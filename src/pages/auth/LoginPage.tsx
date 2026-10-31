@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthShell, PasswordField } from './AuthShell';
 import { DEMO_ACCOUNTS, useAuthStore } from '../../stores/authStore';
 import { MODULOS_DEMO } from '../../lib/features';
@@ -8,6 +8,7 @@ export default function LoginPage() {
   const session = useAuthStore((s) => s.session);
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
+  const aviso = (useLocation().state as { aviso?: string } | null)?.aviso;
   const [identificador, setIdentificador] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,6 +29,7 @@ export default function LoginPage() {
   return (
     <AuthShell title="Volvé a entrenar." text="Ingresá con tu cuenta para reservar, pagar y ver tu agenda.">
       <h1>Ingresar</h1>
+      {aviso && <p className="lede" role="status">{aviso}</p>}
       <form onSubmit={submit} noValidate>
         <div className="fld">
           <label htmlFor="identificador">Email o DNI</label>
@@ -67,17 +69,19 @@ export default function LoginPage() {
           </span>
         ))}
       </p>
-      {MODULOS_DEMO && (
-        <p className="lede">
-          <Link to="/recuperar" className="text-link">
-            Olvidé mi contraseña
-          </Link>
-          {' · '}
-          <Link to="/registro" className="text-link">
-            Crear cuenta
-          </Link>
-        </p>
-      )}
+      <p className="lede">
+        {MODULOS_DEMO && (
+          <>
+            <Link to="/recuperar" className="text-link">
+              Olvidé mi contraseña
+            </Link>
+            {' · '}
+          </>
+        )}
+        <Link to="/registro" className="text-link">
+          Crear cuenta
+        </Link>
+      </p>
     </AuthShell>
   );
 }

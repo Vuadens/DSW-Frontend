@@ -9,13 +9,14 @@ import type { FieldDef } from '../../components/common/Fields';
 import { Pill } from '../../components/common/Tile';
 import { TODAY, fullName } from '../../lib/format';
 import { MODULOS_DEMO } from '../../lib/features';
-import { asSchema, date, optionalDate, persona, str, toId, toOptions } from '../../lib/forms';
+import { asSchema, date, email, optionalDate, persona, str, toId, toOptions } from '../../lib/forms';
 import type { Socio } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
 
 const schema = asSchema(
   z.object({
     ...persona,
+    email,
     fechaAlta: date,
     fechaBaja: optionalDate,
     idPlan: z.string().min(1, 'Elegí un plan'),
@@ -40,6 +41,7 @@ export default function SociosPage() {
       { name: 'dni', label: 'DNI', type: 'text' },
       { name: 'telefono', label: 'Teléfono', type: 'text' },
       { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date' },
+      { name: 'email', label: 'Email', type: 'email', autoComplete: 'off', hint: 'Con él ingresa al sistema. La contraseña inicial son los últimos 6 dígitos del DNI.' },
       { name: 'fechaAlta', label: 'Fecha de alta', type: 'date' },
       { name: 'fechaBaja', label: 'Fecha de baja', type: 'date', hint: 'Dejala vacía si el socio sigue activo.' },
       {
@@ -59,6 +61,7 @@ export default function SociosPage() {
       singular="socio"
       collection="socios"
       items={visibles}
+      filtro={planFiltro}
       header={
         <>
           <div className="tabs" role="group" aria-label="Filtrar por plan">
@@ -83,13 +86,14 @@ export default function SociosPage() {
         dni: str(s?.dni),
         telefono: str(s?.telefono),
         fechaNac: str(s?.fechaNac),
+        email: str(s?.email),
         fechaAlta: s?.fechaAlta ?? TODAY,
         fechaBaja: str(s?.fechaBaja),
         idPlan: str(s?.idPlan),
       })}
       fromForm={(v, existing) => ({
         id: existing?.id,
-        email: existing?.email,
+        email: v.email.trim(),
         nombre: v.nombre.trim(),
         apellido: v.apellido.trim(),
         dni: v.dni.trim(),

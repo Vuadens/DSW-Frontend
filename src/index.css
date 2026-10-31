@@ -756,6 +756,7 @@ label {
 .in input:not([type='checkbox']):not([type='range']):not([type='file']),
 .in select,
 .lf input,
+.lf select,
 .hfilter input {
   display: block;
   width: 100%;
@@ -812,6 +813,34 @@ label {
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 8px;
+}
+
+/* Paginación */
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.paginacion-botones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.paginacion label {
+  margin: 0;
+}
+.paginacion select {
+  height: 36px;
+  padding: 0 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
 }
 
 /* Tabs */

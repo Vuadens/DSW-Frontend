@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/common/Dialog';
+import { Paginacion, usePaginacion } from '../../components/common/Paginacion';
 import { PageHeader, Pill } from '../../components/common/Tile';
 import { TODAY, fullName, horario, longDate } from '../../lib/format';
 import type { Inscripcion } from '../../models';
@@ -20,6 +21,7 @@ export default function MisReservasPage() {
   const propias = inscripciones
     .filter((i) => i.idSocio === user?.id)
     .sort((a, b) => b.fechaClase.localeCompare(a.fechaClase));
+  const { visibles, paginacion } = usePaginacion(propias);
 
   return (
     <>
@@ -28,7 +30,7 @@ export default function MisReservasPage() {
         <p className="none">Todavía no reservaste ninguna clase.</p>
       ) : (
         <div className="rows flush">
-          {propias.map((i) => {
+          {visibles.map((i) => {
             const clase = clases.find((c) => c.id === i.idClase);
             const actividad = actividades.find((a) => a.id === clase?.idActividad);
             const profesor = profesores.find((p) => p.id === clase?.idProfesor);
@@ -58,6 +60,7 @@ export default function MisReservasPage() {
           })}
         </div>
       )}
+      <Paginacion {...paginacion} />
       <ConfirmDialog
         open={cancelling !== null}
         title="Cancelar reserva"

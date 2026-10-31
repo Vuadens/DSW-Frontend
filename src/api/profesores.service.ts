@@ -21,12 +21,13 @@ const fromDto = (dto: ProfesorDto, local?: Partial<Profesor>): Profesor => ({
   apellido: dto.persona.apellido,
   telefono: dto.persona.telefono,
   fechaNac: dateOnly(dto.persona.fechaNac),
+  email: dto.persona.usuario?.email,
   cargo: dto.cargo,
   turnos: dto.turnos.map((t) => t.idTurno),
   sueldos: local?.sueldos ?? [],
 });
 
-const toDto = (profesor: ProfesorInput) => ({ ...personaToDto(profesor), cargo: profesor.cargo });
+const toDto = (profesor: ProfesorInput) => ({ ...personaToDto(profesor), email: profesor.email, cargo: profesor.cargo });
 
 /** Asigna y desasigna turnos hasta que el profesor quede con los indicados. */
 const sincronizarTurnos = async (idProfesor: number, actuales: number[], deseados: number[]) => {

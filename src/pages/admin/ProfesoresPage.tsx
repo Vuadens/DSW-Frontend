@@ -4,7 +4,7 @@ import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
 import { DIAS, TODAY, fmt, fullName } from '../../lib/format';
 import { MODULOS_DEMO } from '../../lib/features';
-import { asSchema, ids, persona, positiveNumber, required, str, toIds } from '../../lib/forms';
+import { asSchema, email, ids, persona, positiveNumber, required, str, toIds } from '../../lib/forms';
 import type { Profesor, Turno } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
 
@@ -12,6 +12,7 @@ import { useDataStore } from '../../stores/dataStore';
 const schema = asSchema(
   z.object({
     ...persona,
+    email,
     cargo: required,
     turnos: ids,
     ...(MODULOS_DEMO ? { sueldo: positiveNumber } : {}),
@@ -36,6 +37,7 @@ export default function ProfesoresPage() {
       { name: 'dni', label: 'DNI', type: 'text' },
       { name: 'telefono', label: 'Teléfono', type: 'text' },
       { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date' },
+      { name: 'email', label: 'Email', type: 'email', autoComplete: 'off', hint: 'Con él ingresa al sistema. La contraseña inicial son los últimos 6 dígitos del DNI.' },
       { name: 'cargo', label: 'Cargo', type: 'text' },
       {
         name: 'turnos',
@@ -66,6 +68,7 @@ export default function ProfesoresPage() {
         dni: str(p?.dni),
         telefono: str(p?.telefono),
         fechaNac: str(p?.fechaNac),
+        email: str(p?.email),
         cargo: str(p?.cargo),
         turnos: (p?.turnos ?? []).map(String),
         sueldo: p ? String(sueldoVigente(p)) : '',
@@ -79,7 +82,7 @@ export default function ProfesoresPage() {
             : [...historial, { desde: TODAY, valor: sueldo }];
         return {
           id: existing?.id,
-          email: existing?.email,
+          email: v.email.trim(),
           nombre: v.nombre.trim(),
           apellido: v.apellido.trim(),
           dni: v.dni.trim(),

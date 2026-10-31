@@ -22,7 +22,7 @@ export interface Persona {
   apellido: string;
   telefono: string;
   fechaNac: string;
-  /** Email de la cuenta (Usuario en el backend). Solo se usa para el login del modo demo. */
+  /** Email de la cuenta (Usuario en el backend). */
   email?: string;
 }
 

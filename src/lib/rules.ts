@@ -1,9 +1,36 @@
+import { API_ENABLED } from '../api/httpClient';
 import type { Actividad, Clase, Cuota, EstadoCuota, EstadoMaquina, Inscripcion, Plan, Socio } from '../models';
-import { ADICIONAL_CLASES, PERIODO_ACTUAL, TODAY, claseFecha } from './format';
+import { ADICIONAL_CLASES, PERIODO_ACTUAL, TODAY, claseFecha, finDeMes } from './format';
 
 export const estadoCuota = (cuota: Cuota): EstadoCuota => {
   if (cuota.fechaPago) return 'pagada';
   return cuota.fechaVencimiento < TODAY ? 'vencida' : 'pendiente';
+};
+
+/**
+ * En el backend una cuota existe recién cuando se cobra: lo que se adeuda de un período
+ * se deduce de los socios activos y su plan. El id negativo evita chocar con las cuotas reales.
+ */
+export const cuotasConPendientes = (cuotas: Cuota[], socios: Socio[], planes: Plan[], periodo: string): Cuota[] => {
+  if (!API_ENABLED) return cuotas;
+  const pendientes = socios.flatMap((socio) => {
+    const plan = planes.find((p) => p.id === socio.idPlan);
+    const cobrada = cuotas.some((c) => c.idSocio === socio.id && c.periodo === periodo);
+    if (!plan || cobrada || socio.fechaBaja || socio.fechaAlta.slice(0, 7) > periodo) return [];
+    return [
+      {
+        id: -socio.id,
+        nroComprobante: '',
+        idSocio: socio.id,
+        periodo,
+        valor: plan.precio,
+        fechaVencimiento: finDeMes(periodo),
+        fechaPago: null,
+        metodoPago: null,
+      },
+    ];
+  });
+  return [...cuotas, ...pendientes];
 };
 
 export const ESTADO_CUOTA_LABEL: Record<EstadoCuota, string> = {

@@ -8,6 +8,7 @@ function App() {
   const hydrate = useDataStore((state) => state.hydrate);
   const restore = useAuthStore((state) => state.restore);
   const session = useAuthStore((state) => state.session);
+  const debeCambiarPassword = useAuthStore((state) => state.debeCambiarPassword);
   const showToast = useUiStore((state) => state.showToast);
 
   useEffect(() => {
@@ -15,12 +16,13 @@ function App() {
   }, [restore]);
 
   // En modo conectado los datos dependen del rol: se cargan al iniciar sesión.
+  // Con la contraseña inicial el backend no entrega datos: se espera a que la cambie.
   useEffect(() => {
-    if (!session) return;
+    if (!session || debeCambiarPassword) return;
     void hydrate(session.role).then((result) => {
       if (result.error) showToast(result.error);
     });
-  }, [session, hydrate, showToast]);
+  }, [session, debeCambiarPassword, hydrate, showToast]);
 
   return <AppRouter />;
 }
