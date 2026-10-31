@@ -19,6 +19,7 @@ import { profesoresService } from '../api/profesores.service';
 import { sociosService } from '../api/socios.service';
 import { turnosService } from '../api/turnos.service';
 import { clasesService } from '../api/clases.service';
+import { cuotasService } from '../api/cuotas.service';
 import { inscripcionesService } from '../api/inscripciones.service';
 import { PERIODO_ACTUAL, TODAY, claseFecha, nextId } from '../lib/format';
 import { adicionalPorClase, clasesDelPeriodo, puedeReservar } from '../lib/rules';
@@ -128,7 +129,8 @@ interface DataState extends Collections {
   marcarAsistencia: (inscripcionId: number, asistio: boolean) => Promise<Result>;
   /** Borrado físico de una inscripción (solo admin). */
   eliminarInscripcion: (inscripcionId: number) => Promise<Result>;
-  pagarCuota: (cuotaId: number, metodo: MetodoPago) => void;
+  /** En modo conectado registra el cobro en el backend, que no guarda el método de pago. */
+  pagarCuota: (cuota: Cuota, metodo: MetodoPago) => Promise<Result>;
   generarCuotas: () => number;
   setEstadoMaquina: (id: number, estado: EstadoMaquina) => void;
   addMantenimiento: (maquinaId: number, data: Omit<Mantenimiento, 'id' | 'fechaFinReal'>) => void;
@@ -155,7 +157,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     try {
       // Solo lo que el rol puede ver: el socio no accede a profesores ni a turnos.
       const staff = role !== 'socio';
-      const [planes, socios, profesores, turnos, actividades, clases, inscripciones] = await Promise.all([
+      const [planes, socios, profesores, turnos, actividades, clases, inscripciones, cuotas] = await Promise.all([
         planesService.list(),
         sociosService.list(),
         staff ? profesoresService.list() : Promise.resolve([] as Profesor[]),
@@ -163,10 +165,11 @@ export const useDataStore = create<DataState>((set, get) => ({
         actividadesService.list(),
         clasesService.list(),
         inscripcionesService.list(),
+        role === 'profesor' ? Promise.resolve([] as Cuota[]) : cuotasService.list(),
       ]);
       // Los ids del backend no coinciden con los del seed local: no se mezclan datos.
-      // Cuotas, máquinas y materiales no tienen backend todavía: en modo conectado quedan vacíos.
-      set({ planes, socios, profesores, turnos, actividades, clases, inscripciones, cuotas: [], maquinas: [], materiales: [], loading: false });
+      // Máquinas y materiales no tienen backend todavía: en modo conectado quedan vacíos.
+      set({ planes, socios, profesores, turnos, actividades, clases, inscripciones, cuotas, maquinas: [], materiales: [], loading: false });
       return {};
     } catch (error) {
       set({ loading: false });
@@ -280,10 +283,21 @@ export const useDataStore = create<DataState>((set, get) => ({
     return {};
   },
 
-  pagarCuota: (cuotaId, metodo) =>
+  pagarCuota: async (cuota, metodo) => {
+    if (API_ENABLED) {
+      try {
+        const cobrada = await cuotasService.registrarCobro(cuota.idSocio, cuota.periodo);
+        set((state) => ({ cuotas: [cobrada, ...state.cuotas] }));
+        return {};
+      } catch (error) {
+        return { error: apiErrorMessage(error) };
+      }
+    }
     set((state) => ({
-      cuotas: state.cuotas.map((c) => (c.id === cuotaId ? { ...c, fechaPago: TODAY, metodoPago: metodo } : c)),
-    })),
+      cuotas: state.cuotas.map((c) => (c.id === cuota.id ? { ...c, fechaPago: TODAY, metodoPago: metodo } : c)),
+    }));
+    return {};
+  },
 
   generarCuotas: () => {
     const state = get();

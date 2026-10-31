@@ -17,11 +17,13 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean; demo?: boole
     { to: '/app/socios', label: 'Socios' },
     { to: '/app/profesores', label: 'Profesores' },
     { to: '/app/planes', label: 'Planes', demo: true },
+    { to: '/app/cuotas', label: 'Cuotas' },
     { to: '/app/finanzas', label: 'Finanzas', demo: true },
     { to: '/app/actividades', label: 'Actividades' },
     { to: '/app/clases', label: 'Clases' },
     { to: '/app/maquinas', label: 'Máquinas', demo: true },
-    { to: '/app/catalogos', label: MODULOS_DEMO ? 'Turnos y materiales' : 'Turnos' },
+    { to: '/app/turnos', label: 'Turnos' },
+    { to: '/app/materiales', label: 'Materiales', demo: true },
     { to: '/app/perfil', label: 'Actualizar mis datos' },
   ],
   profesor: [
@@ -33,7 +35,7 @@ const NAV: Record<Role, { to: string; label: string; end?: boolean; demo?: boole
     { to: '/app', label: 'Inicio', end: true },
     { to: '/app/clases', label: 'Reservar clase' },
     { to: '/app/reservas', label: 'Mis reservas' },
-    { to: '/app/cuotas', label: 'Mis cuotas', demo: true },
+    { to: '/app/cuotas', label: 'Mis cuotas' },
     { to: '/app/perfil', label: 'Actualizar mis datos' },
   ],
 };
@@ -46,6 +48,7 @@ export function Shell() {
   const photos = useAuthStore((s) => s.photos);
   const logout = useAuthStore((s) => s.logout);
   const restoring = useAuthStore((s) => s.restoring);
+  const debeCambiarPassword = useAuthStore((s) => s.debeCambiarPassword);
   const theme = useUiStore((s) => s.theme);
   const cycleTheme = useUiStore((s) => s.cycleTheme);
   const navigate = useNavigate();
@@ -53,6 +56,7 @@ export function Shell() {
   const [collapsed, setCollapsed] = useState(false);
 
   if (restoring) return <p className="none" role="status">Cargando…</p>;
+  if (debeCambiarPassword) return <Navigate to="/cambiar-password" replace />;
   if (!user) return <Navigate to="/ingresar" replace />;
 
   const photo = photos[photoKey(user.role, user.id)];

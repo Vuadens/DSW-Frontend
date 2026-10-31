@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Dialog } from '../../components/common/Dialog';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
+import { Paginacion, usePaginacion } from '../../components/common/Paginacion';
 import { Pill } from '../../components/common/Tile';
 import { DIAS, claseFecha, fullName, horario, longDate } from '../../lib/format';
 import { asSchema, intNumber, str, time, toOptions } from '../../lib/forms';
@@ -36,13 +37,16 @@ function InscriptosDialog({ clase, onClose }: { clase: Clase | null; onClose: ()
   const [idSocio, setIdSocio] = useState('');
 
   const clases = useDataStore((s) => s.clases);
+  const lista = clase
+    ? inscripciones.filter((i) => i.idClase === clase.id && i.fechaClase === claseFecha(clase.dia))
+    : [];
+  const { visibles, paginacion } = usePaginacion(lista, clase?.id);
 
   if (!clase) return null;
 
   const fecha = claseFecha(clase.dia);
   // La ocupación se recarga después de cada operación: se toma la versión actual de la clase.
   const actual = clases.find((c) => c.id === clase.id) ?? clase;
-  const lista = inscripciones.filter((i) => i.idClase === clase.id && i.fechaClase === fecha);
   const confirmadas = lista.filter((i) => i.estado === 'Confirmada');
   const disponibles = socios.filter((s) => !s.fechaBaja && !confirmadas.some((i) => i.idSocio === s.id));
   const actividad = actividades.find((a) => a.id === clase.idActividad);
@@ -62,7 +66,7 @@ function InscriptosDialog({ clase, onClose }: { clase: Clase | null; onClose: ()
         <p className="none">Todavía no hay inscriptos para esta fecha.</p>
       ) : (
         <div className="rows flush">
-          {lista.map((i) => {
+          {visibles.map((i) => {
             const socio = socios.find((s) => s.id === i.idSocio);
             return (
               <div key={i.id} className="row">
@@ -86,6 +90,7 @@ function InscriptosDialog({ clase, onClose }: { clase: Clase | null; onClose: ()
           })}
         </div>
       )}
+      <Paginacion {...paginacion} />
       <div className="fld">
         <label htmlFor="inscribir-socio">Inscribir socio</label>
         <select id="inscribir-socio" value={idSocio} onChange={(e) => setIdSocio(e.target.value)}>
@@ -167,6 +172,7 @@ export default function ClasesAdminPage() {
         singular="clase"
         collection="clases"
         items={sorted}
+        filtro={dia}
         header={
           <div className="tabs" role="group" aria-label="Filtrar por día">
             <button type="button" aria-pressed={dia === null} onClick={() => setDia(null)}>

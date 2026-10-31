@@ -8,6 +8,8 @@ export interface PersonaDto {
   apellido: string;
   telefono: string;
   fechaNac: string;
+  /** Cuenta de acceso de la persona; las altas viejas pueden no tenerla. */
+  usuario?: { email: string } | null;
 }
 
 interface SocioDto {
@@ -27,6 +29,7 @@ const fromDto = (dto: SocioDto): Socio => ({
   apellido: dto.persona.apellido,
   telefono: dto.persona.telefono,
   fechaNac: dateOnly(dto.persona.fechaNac),
+  email: dto.persona.usuario?.email,
   fechaAlta: dateOnly(dto.fechaAlta),
   fechaBaja: dateOnly(dto.fechaBaja),
   idPlan: dto.planId,
@@ -42,6 +45,7 @@ export const personaToDto = (persona: PersonaDto) => ({
 
 const toDto = (socio: SocioInput) => ({
   ...personaToDto(socio),
+  email: socio.email,
   planId: socio.idPlan ?? undefined,
   fechaAlta: socio.fechaAlta || undefined,
   fechaBaja: socio.fechaBaja || null,

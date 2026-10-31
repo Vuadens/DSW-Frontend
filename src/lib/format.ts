@@ -1,7 +1,7 @@
 import type { DiaSemana } from '../models';
 import { API_ENABLED } from '../api/httpClient';
 
-const isoLocal = (date: Date) =>
+export const isoLocal = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 /**
@@ -29,6 +29,12 @@ const MESES = [
   'diciembre',
 ];
 
+/** "2026-10" → "2026-10-31". */
+export const finDeMes = (periodo: string) => {
+  const [y, m] = periodo.split('-').map(Number);
+  return isoLocal(new Date(y, m, 0));
+};
+
 export const longDate = (iso: string) => {
   const [y, m, d] = iso.split('-');
   return `${Number(d)} de ${MESES[Number(m) - 1]} de ${y}`;
@@ -42,6 +48,13 @@ export const initials = (name: string) =>
     .slice(0, 2)
     .join('')
     .toUpperCase();
+
+/** Pasa a minúsculas y quita las tildes, para buscar sin distinguirlas. */
+export const normalizar = (texto: string) =>
+  texto
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase();
 
 export const fullName = (nombre: string, apellido: string) => `${nombre} ${apellido}`.trim();
 

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Dialog } from '../../components/common/Dialog';
 import { EntityPage } from '../../components/common/EntityPage';
 import { Fields, type FieldDef } from '../../components/common/Fields';
+import { Paginacion, usePaginacion } from '../../components/common/Paginacion';
 import { Pill } from '../../components/common/Tile';
 import { TODAY, longDate } from '../../lib/format';
 import { asSchema, date, required, str } from '../../lib/forms';
@@ -119,6 +120,7 @@ function MantenimientoContent({ maquinaId, onClose }: { maquinaId: number; onClo
   const addMantenimiento = useDataStore((s) => s.addMantenimiento);
   const cerrarMantenimiento = useDataStore((s) => s.cerrarMantenimiento);
   const showToast = useUiStore((s) => s.showToast);
+  const { visibles, paginacion } = usePaginacion(maquina?.mantenimientos ?? []);
 
   const {
     register,
@@ -182,7 +184,7 @@ function MantenimientoContent({ maquinaId, onClose }: { maquinaId: number; onClo
         <p className="none">Sin mantenimientos registrados.</p>
       ) : (
         <div className="rows tight">
-          {maquina.mantenimientos.map((m) => (
+          {visibles.map((m) => (
             <div key={m.id} className="row compact">
               <div>
                 <h3>{m.tipo}</h3>
@@ -195,6 +197,7 @@ function MantenimientoContent({ maquinaId, onClose }: { maquinaId: number; onClo
           ))}
         </div>
       )}
+      <Paginacion {...paginacion} />
       <div className="acts">
         <button type="button" className="btn line sm" onClick={onClose}>
           Cerrar

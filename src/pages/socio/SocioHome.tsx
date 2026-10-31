@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 import { PageHeader, Pill, Tile, TileFooter } from '../../components/common/Tile';
 import { PERIODO_ACTUAL, fmt, longDate, TODAY } from '../../lib/format';
-import { ESTADO_CUOTA_LABEL, clasesDelPeriodo, estadoCuota, periodoLabel } from '../../lib/rules';
+import { ESTADO_CUOTA_LABEL, clasesDelPeriodo, cuotasConPendientes, estadoCuota, periodoLabel } from '../../lib/rules';
 import { useCurrentUser } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
-import { MODULOS_DEMO } from '../../lib/features';
 
 export default function SocioHome() {
   const user = useCurrentUser();
@@ -19,7 +18,7 @@ export default function SocioHome() {
 
   const usadas = clasesDelPeriodo(socio.id, inscripciones);
   const limite = plan?.clasesPorPeriodo ?? null;
-  const propias = cuotas.filter((c) => c.idSocio === socio.id);
+  const propias = cuotasConPendientes(cuotas, [socio], plan ? [plan] : [], PERIODO_ACTUAL).filter((c) => c.idSocio === socio.id);
   const actual = propias.find((c) => c.periodo === PERIODO_ACTUAL);
   const mora = propias.filter((c) => estadoCuota(c) === 'vencida');
   const proxima = inscripciones
@@ -51,8 +50,8 @@ export default function SocioHome() {
             </Link>
           </TileFooter>
         </Tile>
-        {MODULOS_DEMO && <Tile tone={mora.length ? 'red' : 'green'}>
-          <h3>Cuota de octubre</h3>
+        <Tile tone={mora.length ? 'red' : 'green'}>
+          <h3>Cuota del mes</h3>
           <span className="num">{actual ? ESTADO_CUOTA_LABEL[estadoCuota(actual)] : 'Sin cuota'}</span>
           <p>
             {mora.length
@@ -66,7 +65,7 @@ export default function SocioHome() {
               Ver cuotas
             </Link>
           </TileFooter>
-        </Tile>}
+        </Tile>
         <Tile tone="blue">
           <h3>Próxima clase</h3>
           <span className="num">{proximaActividad?.nombre ?? 'Ninguna'}</span>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PageHeader, Tile, TileFooter } from '../../components/common/Tile';
 import { PERIODO_ACTUAL, fmt, longDate, TODAY } from '../../lib/format';
-import { estadoCuota } from '../../lib/rules';
+import { cuotasConPendientes, estadoCuota } from '../../lib/rules';
 import { useDataStore } from '../../stores/dataStore';
 import { MODULOS_DEMO } from '../../lib/features';
 
@@ -13,6 +13,7 @@ export default function AdminHome() {
   const mora = cuotas.filter((c) => estadoCuota(c) === 'vencida');
   const activos = socios.filter((s) => !s.fechaBaja);
   const sinServicio = maquinas.filter((m) => m.estado !== 'ok');
+  const adeudan = cuotasConPendientes(cuotas, socios, planes, PERIODO_ACTUAL).filter((c) => c.periodo === PERIODO_ACTUAL && !c.fechaPago);
 
   return (
     <>
@@ -68,7 +69,17 @@ export default function AdminHome() {
             </Link>
           </TileFooter>
         </Tile>
-        </> : (
+        </> : <>
+          <Tile tone={adeudan.length ? 'red' : 'green'}>
+            <h3>Cuotas del mes</h3>
+            <span className="num">{adeudan.length}</span>
+            <p>{fmt(adeudan.reduce((a, c) => a + c.valor, 0))} pendientes de cobro.</p>
+            <TileFooter>
+              <Link to="/app/cuotas" className="btn sm">
+                Gestionar cobros
+              </Link>
+            </TileFooter>
+          </Tile>
           <Tile tone="yellow">
             <h3>Clases semanales</h3>
             <span className="num">{clases.length}</span>
@@ -79,7 +90,7 @@ export default function AdminHome() {
               </Link>
             </TileFooter>
           </Tile>
-        )}
+        </>}
       </div>
     </>
   );

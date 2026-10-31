@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { Paginacion, usePaginacion } from '../../components/common/Paginacion';
 import { PageHeader, Pill, Tile } from '../../components/common/Tile';
 import { fmt, fullName, PERIODO_ACTUAL } from '../../lib/format';
 import { estadoCuota } from '../../lib/rules';
@@ -12,6 +13,7 @@ export default function FinanzasPage() {
   const pendientes = cuotas.filter((c) => estadoCuota(c) !== 'pagada');
   const socio = (id: number) => socios.find((s) => s.id === id);
   const filas = useMemo(() => [...cuotas].sort((a, b) => b.fechaVencimiento.localeCompare(a.fechaVencimiento)), [cuotas]);
+  const { visibles, paginacion } = usePaginacion(filas);
 
   return (
     <>
@@ -24,7 +26,7 @@ export default function FinanzasPage() {
       <div className="finance-section">
         <div className="finance-heading"><h2>Cobranzas</h2><Link className="btn line sm" to="/app/socios">Ver socios</Link></div>
         <div className="finance-list">
-          {filas.map((cuota) => {
+          {visibles.map((cuota) => {
             const member = socio(cuota.idSocio);
             const status = estadoCuota(cuota);
             return <div className="finance-row" key={cuota.id}>
@@ -33,6 +35,7 @@ export default function FinanzasPage() {
             </div>;
           })}
         </div>
+        <Paginacion {...paginacion} />
       </div>
     </>
   );
