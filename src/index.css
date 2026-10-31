@@ -1083,7 +1083,7 @@ button.av:focus-visible::after {
 }
 @media (max-width: 860px) {
   .app {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .side {
     position: static;
@@ -1168,7 +1168,7 @@ button.av:focus-visible::after {
 .finance-row small { color: var(--muted); }
 .finance-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 .finance-actions strong { font: 600 20px "Inter Tight", sans-serif; }
-.class-card { position: relative; padding: 26px 20px; border-radius: 24px; border: 0; color: #000; }
+.class-card { position: relative; overflow: hidden; padding: 26px 20px; border-radius: 24px; border: 0; color: #000; }
 .class-card h3, .class-card small { color: #000; }
 .class-0 { background: var(--green); }
 .class-1 { background: var(--purple); }
