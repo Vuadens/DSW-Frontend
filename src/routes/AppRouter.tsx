@@ -55,7 +55,7 @@ export const AppRouter = () => (
           <Route path="perfil" element={<Perfil />} />
           <Route path="socios" element={<ByRole admin={<Socios />} profesor={<SociosPorPlan />} />} />
           <Route path="profesores" element={<ByRole admin={<Profesores />} />} />
-          <Route path="planes" element={demo(<ByRole admin={<Planes />} />)} />
+          <Route path="planes" element={<ByRole admin={<Planes />} />} />
           <Route path="actividades" element={<ByRole admin={<Actividades />} />} />
           <Route path="maquinas" element={demo(<ByRole admin={<Maquinas />} />)} />
           <Route path="turnos" element={<ByRole admin={<Turnos />} />} />

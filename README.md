@@ -12,8 +12,8 @@ pnpm dev
 - **Modo conectado** (`VITE_API_URL=http://localhost:3000`, la URL del backend sin `/api`):
   - Se ingresa con email o DNI.
   - El token se guarda en `localStorage` y la sesión se recupera al recargar. Un 401 cierra la sesión.
-  - Los módulos que todavía no tienen backend se ocultan: planes (CRUD), finanzas, máquinas,
-    materiales, mis cuotas, registro, recuperar clave, foto de perfil y sueldos.
+  - Los módulos que todavía no tienen backend se ocultan: finanzas, máquinas, materiales,
+    recuperar clave, foto de perfil, sueldos y clases por período de los planes.
 
 Para el modo conectado, el backend tiene que estar corriendo con el seed de demo
 (ver el README de `DSW-Backend`). Las cuentas de prueba usan la contraseña `demo1234`.

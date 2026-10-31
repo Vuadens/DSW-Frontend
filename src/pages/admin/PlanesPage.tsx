@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
 import { fmt } from '../../lib/format';
+import { MODULOS_DEMO } from '../../lib/features';
 import { asSchema, optionalPositiveNumber, positiveNumber, required, str } from '../../lib/forms';
 import type { Plan, TipoPlan } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
@@ -29,7 +30,10 @@ const fields: FieldDef[] = [
     ],
   },
   { name: 'precio', label: 'Precio mensual', type: 'number' },
-  { name: 'clasesPorPeriodo', label: 'Clases por período', type: 'number', hint: 'Dejalo vacío para clases ilimitadas.' },
+  // El backend todavía no guarda las clases por período.
+  ...(MODULOS_DEMO
+    ? [{ name: 'clasesPorPeriodo', label: 'Clases por período', type: 'number' as const, hint: 'Dejalo vacío para clases ilimitadas.' }]
+    : []),
   { name: 'descripcion', label: 'Descripción', type: 'textarea' },
 ];
 
@@ -68,7 +72,7 @@ export default function PlanesPage() {
           </h3>
           <small>{p.descripcion || 'Sin descripción'}</small>
           <small>
-            {p.clasesPorPeriodo ? `${p.clasesPorPeriodo} clases por mes` : 'Clases ilimitadas'} ·{' '}
+            {MODULOS_DEMO && `${p.clasesPorPeriodo ? `${p.clasesPorPeriodo} clases por mes` : 'Clases ilimitadas'} · `}
             {socios.filter((s) => s.idPlan === p.id).length} socios
           </small>
         </>
