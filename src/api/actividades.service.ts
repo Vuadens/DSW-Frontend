@@ -26,7 +26,8 @@ const fromDto = (dto: ActividadDto): Actividad => ({
 
 const toDto = (actividad: ActividadInput) => ({
   nombre: actividad.nombre,
-  descripcion: actividad.descripcion || undefined,
+  // null borra la descripción en el backend; undefined la dejaría como estaba.
+  descripcion: actividad.descripcion.trim() || null,
   cupoMaximo: actividad.cupoMaximo,
   planes: actividad.planes,
 });
