@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PageHeader, Tile, TileFooter } from '../../components/common/Tile';
 import { PERIODO_ACTUAL, fmt, longDate, TODAY } from '../../lib/format';
-import { cuotasConPendientes, estadoCuota } from '../../lib/rules';
+import { cuotasConPendientes, cuotasConPendientesHasta, estadoCuota } from '../../lib/rules';
 import { useDataStore } from '../../stores/dataStore';
 import { MODULOS_DEMO } from '../../lib/features';
 
@@ -10,7 +10,7 @@ export default function AdminHome() {
 
   const ingresos = cuotas.filter((c) => c.fechaPago?.startsWith(PERIODO_ACTUAL)).reduce((a, c) => a + c.valor, 0);
   const egresos = profesores.reduce((a, p) => a + (p.sueldos[p.sueldos.length - 1]?.valor ?? 0), 0);
-  const mora = cuotas.filter((c) => estadoCuota(c) === 'vencida');
+  const mora = cuotasConPendientesHasta(cuotas, socios, planes).filter((c) => estadoCuota(c) === 'vencida');
   const activos = socios.filter((s) => !s.fechaBaja);
   const sinServicio = maquinas.filter((m) => m.estado !== 'ok');
   const adeudan = cuotasConPendientes(cuotas, socios, planes, PERIODO_ACTUAL).filter((c) => c.periodo === PERIODO_ACTUAL && !c.fechaPago);

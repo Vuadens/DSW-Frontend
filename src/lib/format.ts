@@ -29,6 +29,18 @@ const MESES = [
   'diciembre',
 ];
 
+/** Día del mes en que vence la cuota de ese mes; desde el día siguiente queda en mora. */
+export const DIA_VENCIMIENTO = 10;
+
+/** "2026-10" → "2026-10-10". */
+export const vencimientoCuota = (periodo: string) => `${periodo}-${String(DIA_VENCIMIENTO).padStart(2, '0')}`;
+
+/** "2026-12" → "2027-01". */
+export const periodoSiguiente = (periodo: string) => {
+  const [y, m] = periodo.split('-').map(Number);
+  return isoLocal(new Date(y, m, 1)).slice(0, 7);
+};
+
 /** "2026-10" → "2026-10-31". */
 export const finDeMes = (periodo: string) => {
   const [y, m] = periodo.split('-').map(Number);

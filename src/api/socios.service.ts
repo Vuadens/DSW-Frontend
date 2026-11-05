@@ -55,7 +55,7 @@ const toDto = (socio: SocioInput) => ({
   fechaAlta: socio.fechaAlta || undefined,
 });
 
-export type EstadoCuotaSocio = 'AL_DIA' | 'ADEUDA';
+export type EstadoCuotaSocio = 'AL_DIA' | 'PENDIENTE' | 'EN_MORA';
 
 interface SocioPorPlanDto {
   idPersona: number;

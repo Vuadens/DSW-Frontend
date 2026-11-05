@@ -1,5 +1,5 @@
 import type { Cuota } from '../models';
-import { finDeMes, isoLocal } from '../lib/format';
+import { isoLocal, vencimientoCuota } from '../lib/format';
 import { httpClient } from './httpClient';
 
 export interface CuotaDto {
@@ -20,7 +20,7 @@ export const cuotaFromDto = (dto: CuotaDto): Cuota => {
     periodo,
     // Prisma serializa Decimal como string.
     valor: Number(dto.valor),
-    fechaVencimiento: finDeMes(periodo),
+    fechaVencimiento: vencimientoCuota(periodo),
     // Es un instante, no una fecha: a la noche en Argentina en UTC ya es el día siguiente.
     fechaPago: isoLocal(new Date(dto.fechaPago)),
     metodoPago: null,

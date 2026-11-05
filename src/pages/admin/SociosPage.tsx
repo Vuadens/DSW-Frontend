@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ESTADO_CUOTA_SOCIO_LABEL, useSociosPorPlan } from '../../hooks/useSociosPorPlan';
 import { Link } from 'react-router-dom';
 import { fmt } from '../../lib/format';
-import { estadoCuota } from '../../lib/rules';
+import { estadoCuota, pillEstadoSocio } from '../../lib/rules';
 import { z } from 'zod';
 import { Dialog } from '../../components/common/Dialog';
 import { EntityPage } from '../../components/common/EntityPage';
@@ -213,7 +213,7 @@ export default function SociosPage() {
               {estado && (
                 <>
                   {' · '}
-                  <Pill kind={estado === 'AL_DIA' ? 'ok' : 'mora'}>{ESTADO_CUOTA_SOCIO_LABEL[estado]}</Pill>
+                  <Pill kind={pillEstadoSocio(estado)}>{ESTADO_CUOTA_SOCIO_LABEL[estado]}</Pill>
                 </>
               )}
             </small>

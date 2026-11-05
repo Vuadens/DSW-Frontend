@@ -3,7 +3,7 @@ import { sociosService, type SocioDetalle } from '../../api/socios.service';
 import { useDetalle } from '../../hooks/useDetalle';
 import { ESTADO_CUOTA_SOCIO_LABEL } from '../../hooks/useSociosPorPlan';
 import { PERIODO_ACTUAL, fmt, fullName, longDate } from '../../lib/format';
-import { ESTADO_CUOTA_LABEL, estadoCuota, periodoLabel } from '../../lib/rules';
+import { ESTADO_CUOTA_LABEL, estadoCuota, estadoCuotasSocio, periodoLabel, pillEstadoSocio } from '../../lib/rules';
 import { useDataStore } from '../../stores/dataStore';
 import { Dialog } from './Dialog';
 import { Pill } from './Tile';
@@ -20,7 +20,7 @@ const cargar = async (id: number): Promise<SocioDetalle> => {
     socio,
     plan: planes.find((p) => p.id === socio.idPlan)?.nombre ?? 'Sin plan',
     cuotas: propias,
-    estadoCuota: propias.some((c) => c.periodo === PERIODO_ACTUAL && c.fechaPago) ? 'AL_DIA' : 'ADEUDA',
+    estadoCuota: estadoCuotasSocio(propias),
     ultimoMesPagado: propias.find((c) => c.fechaPago)?.periodo ?? null,
   };
 };
@@ -55,7 +55,7 @@ export function SocioDetalleDialog({ socioId, conCuotas, onClose }: Props) {
           {conCuotas && (
             <>
               <p>
-                <Pill kind={detalle.estadoCuota === 'AL_DIA' ? 'ok' : 'mora'}>{ESTADO_CUOTA_SOCIO_LABEL[detalle.estadoCuota]}</Pill>
+                <Pill kind={pillEstadoSocio(detalle.estadoCuota)}>{ESTADO_CUOTA_SOCIO_LABEL[detalle.estadoCuota]}</Pill>
               </p>
               <p className="lede" style={{ margin: '8px 0 12px', fontSize: 15 }}>
                 {detalle.ultimoMesPagado ? `Último mes pagado: ${periodoLabel(detalle.ultimoMesPagado)}` : 'Todavía no registra pagos.'}
