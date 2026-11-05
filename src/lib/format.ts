@@ -6,10 +6,20 @@ export const isoLocal = (date: Date) =>
 
 /**
  * Fecha "de hoy". En modo demo es fija, para que los datos sembrados sean coherentes;
- * en modo conectado es la fecha real.
+ * en modo conectado es la fecha real y se actualiza con actualizarHoy() al cambiar el día.
  */
-export const TODAY = API_ENABLED ? isoLocal(new Date()) : '2026-10-11';
-export const PERIODO_ACTUAL = TODAY.slice(0, 7);
+export let TODAY = API_ENABLED ? isoLocal(new Date()) : '2026-10-11';
+export let PERIODO_ACTUAL = TODAY.slice(0, 7);
+
+/** Si cambió el día (por ejemplo, con la pestaña abierta de un día para otro), actualiza TODAY y devuelve true. */
+export const actualizarHoy = () => {
+  if (!API_ENABLED) return false;
+  const hoy = isoLocal(new Date());
+  if (hoy === TODAY) return false;
+  TODAY = hoy;
+  PERIODO_ACTUAL = hoy.slice(0, 7);
+  return true;
+};
 export const ADICIONAL_CLASES = 0.05;
 
 export const fmt = (n: number) => '$\u00a0' + Math.round(n).toLocaleString('es-AR');
