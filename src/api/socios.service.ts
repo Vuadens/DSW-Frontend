@@ -64,17 +64,19 @@ interface SocioPorPlanDto {
   estadoCuota?: EstadoCuotaSocio;
 }
 
+/** Las cuotas y su estado solo vienen para el administrador y el propio socio, no para el profesor. */
 interface SocioDetalleDto extends SocioDto {
   plan: { nombre: string };
-  cuotas: CuotaDto[];
-  estadoCuotas: { estado: EstadoCuotaSocio; ultimoMesPagado: string | null };
+  cuotas?: CuotaDto[];
+  estadoCuotas?: { estado: EstadoCuotaSocio; ultimoMesPagado: string | null };
 }
 
 export interface SocioDetalle {
   socio: Socio;
   plan: string;
   cuotas: Cuota[];
-  estadoCuota: EstadoCuotaSocio;
+  /** null cuando el backend no informa las cuotas (detalle pedido por un profesor). */
+  estadoCuota: EstadoCuotaSocio | null;
   /** Período "2026-10". */
   ultimoMesPagado: string | null;
 }
@@ -86,9 +88,9 @@ export const sociosService = {
     return {
       socio: fromDto(data),
       plan: data.plan.nombre,
-      cuotas: data.cuotas.map(cuotaFromDto),
-      estadoCuota: data.estadoCuotas.estado,
-      ultimoMesPagado: data.estadoCuotas.ultimoMesPagado?.slice(0, 7) ?? null,
+      cuotas: data.cuotas?.map(cuotaFromDto) ?? [],
+      estadoCuota: data.estadoCuotas?.estado ?? null,
+      ultimoMesPagado: data.estadoCuotas?.ultimoMesPagado?.slice(0, 7) ?? null,
     };
   },
   /** Listado de socios de un plan: nombre, apellido y DNI; el admin recibe además el estado de la cuota del mes. */

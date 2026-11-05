@@ -52,7 +52,7 @@ export function SocioDetalleDialog({ socioId, conCuotas, onClose }: Props) {
             {detalle.socio.fechaNac && <div><dt>Nacimiento</dt><dd>{longDate(detalle.socio.fechaNac)}</dd></div>}
             {detalle.socio.fechaAlta && <div><dt>Alta</dt><dd>{longDate(detalle.socio.fechaAlta)}</dd></div>}
           </dl>
-          {conCuotas && (
+          {conCuotas && detalle.estadoCuota && (
             <>
               <p>
                 <Pill kind={pillEstadoSocio(detalle.estadoCuota)}>{ESTADO_CUOTA_SOCIO_LABEL[detalle.estadoCuota]}</Pill>
