@@ -127,6 +127,9 @@ interface DataState extends Collections {
   reservar: (socioId: number, claseId: number) => Promise<Result & { adicional?: number }>;
   cancelarReserva: (inscripcionId: number) => Promise<Result>;
   marcarAsistencia: (inscripcionId: number, asistio: boolean) => Promise<Result>;
+  /** Baja lógica del profesor: no puede tener clases asignadas y se le quitan los turnos. */
+  darDeBajaProfesor: (id: number) => Promise<Result>;
+  reactivarProfesor: (id: number) => Promise<Result>;
   /** Borrado físico de una inscripción (solo admin). */
   eliminarInscripcion: (inscripcionId: number) => Promise<Result>;
   /** En modo conectado registra el cobro en el backend, que no guarda el método de pago. */
@@ -213,6 +216,38 @@ export const useDataStore = create<DataState>((set, get) => ({
     set((state) => ({
       [key]: (state[key] as { id: number }[]).filter((i) => i.id !== id),
     }) as unknown as Partial<DataState>);
+    return {};
+  },
+
+  darDeBajaProfesor: async (id) => {
+    const blocked = blockers(get(), 'profesores', id);
+    if (blocked) return { error: blocked };
+    const actual = get().profesores.find((p) => p.id === id);
+    if (!actual) return { error: 'No encontramos al profesor.' };
+    let actualizado: Profesor = { ...actual, fechaBaja: TODAY, turnos: [] };
+    if (API_ENABLED) {
+      try {
+        actualizado = await profesoresService.darDeBaja(id, actual);
+      } catch (error) {
+        return { error: apiErrorMessage(error) };
+      }
+    }
+    set((state) => ({ profesores: state.profesores.map((p) => (p.id === id ? actualizado : p)) }));
+    return {};
+  },
+
+  reactivarProfesor: async (id) => {
+    const actual = get().profesores.find((p) => p.id === id);
+    if (!actual) return { error: 'No encontramos al profesor.' };
+    let actualizado: Profesor = { ...actual, fechaBaja: '' };
+    if (API_ENABLED) {
+      try {
+        actualizado = await profesoresService.reactivar(id, actual);
+      } catch (error) {
+        return { error: apiErrorMessage(error) };
+      }
+    }
+    set((state) => ({ profesores: state.profesores.map((p) => (p.id === id ? actualizado : p)) }));
     return {};
   },
 

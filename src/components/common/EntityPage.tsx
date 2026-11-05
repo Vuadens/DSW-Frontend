@@ -25,6 +25,8 @@ interface Props<T extends { id: number }> {
   /** Acciones extra por fila, antes de Editar y Eliminar. */
   renderActions?: (item: T) => ReactNode;
   canEdit?: boolean;
+  /** false oculta Eliminar, por ejemplo cuando la entidad tiene baja lógica. */
+  canDelete?: boolean;
   /** Contenido adicional bajo el encabezado, por ejemplo resúmenes. */
   header?: ReactNode;
   /** Filtro externo aplicado a `items`: al cambiar, la lista vuelve a la primera página. */
@@ -45,6 +47,7 @@ export function EntityPage<T extends { id: number }>({
   renderItem,
   searchText,
   renderActions,
+  canDelete = true,
   header,
   filtro,
   itemClassName,
@@ -103,16 +106,18 @@ export function EntityPage<T extends { id: number }>({
                 <button type="button" className="btn line sm" onClick={() => setEditing(item)}>
                   Editar
                 </button>
-                <button
-                  type="button"
-                  className="btn line sm"
-                  onClick={() => {
-                    setDeleteError(undefined);
-                    setDeleting(item);
-                  }}
-                >
-                  Eliminar
-                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="btn line sm"
+                    onClick={() => {
+                      setDeleteError(undefined);
+                      setDeleting(item);
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                )}
               </div>
             </div>
           ))}

@@ -56,7 +56,7 @@ export default function ActividadesPage() {
               name: 'profesores',
               label: 'Profesores',
               type: 'multi' as const,
-              options: toOptions(profesores, (p) => fullName(p.nombre, p.apellido)),
+              options: toOptions(profesores.filter((p) => !p.fechaBaja), (p) => fullName(p.nombre, p.apellido)),
             },
           ]
         : []),

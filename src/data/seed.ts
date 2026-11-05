@@ -95,6 +95,7 @@ export const seedProfesores = (): Profesor[] =>
     telefono,
     fechaNac: '1990-01-01',
     sueldos: [...sueldos],
+    fechaBaja: '',
   }));
 
 export const seedActividades = (): Actividad[] =>
