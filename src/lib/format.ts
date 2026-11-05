@@ -100,6 +100,9 @@ export const claseFecha = (dia: DiaSemana) => {
 
 export const diaNumero = (dia: DiaSemana) => Number(claseFecha(dia).slice(8, 10));
 
+/** "2026-11-06" → "noviembre". */
+export const mesDe = (iso: string) => MESES[Number(iso.slice(5, 7)) - 1];
+
 export const diaLabel = (dia: DiaSemana) => `${dia} ${diaNumero(dia)}`;
 
 export const horario = (desde: string, hasta: string) => `${desde} a ${hasta}`;
