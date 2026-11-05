@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ClaseDetalleDialog } from '../../components/common/ClaseDetalleDialog';
 import { PageHeader, Tile, TileFooter } from '../../components/common/Tile';
-import { DIAS, diaNumero, fmt, fullName, horario } from '../../lib/format';
+import { DIAS, claseFecha, diaNumero, fmt, fullName, horario, mesDe } from '../../lib/format';
 import { estaInscripto, ocupados, puedeReservar } from '../../lib/rules';
 import type { Tone } from '../../models';
 import { useCurrentUser } from '../../stores/authStore';
@@ -26,12 +26,16 @@ export default function ReservarPage() {
   const socio = socios.find((s) => s.id === user?.id);
   const plan = planes.find((p) => p.id === socio?.idPlan);
 
+  // Ordenado por la fecha más cercana: la semana empieza hoy, no el lunes.
   const porDia = useMemo(
     () =>
       DIAS.map((dia) => ({
         dia,
+        fecha: claseFecha(dia),
         clases: clases.filter((c) => c.dia === dia).sort((a, b) => a.desde.localeCompare(b.desde)),
-      })).filter((d) => d.clases.length > 0),
+      }))
+        .filter((d) => d.clases.length > 0)
+        .sort((a, b) => a.fecha.localeCompare(b.fecha)),
     [clases],
   );
 
@@ -40,11 +44,13 @@ export default function ReservarPage() {
   return (
     <>
       <PageHeader title="Reservar clase" lede="Elegí un horario de esta semana. Si superás tu cupo mensual se suma un adicional." />
-      {porDia.map(({ dia, clases: delDia }) => (
+      {porDia.map(({ dia, fecha, clases: delDia }) => (
         <section key={dia} className="day">
           <div className="dn">
             {diaNumero(dia)}
-            <small>{dia}</small>
+            <small>
+              {dia} · {mesDe(fecha)}
+            </small>
           </div>
           <div className="tiles">
             {delDia.map((c) => {

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PageHeader, Pill, Tile, TileFooter } from '../../components/common/Tile';
 import { PERIODO_ACTUAL, fmt, longDate, TODAY } from '../../lib/format';
-import { ESTADO_CUOTA_LABEL, clasesDelPeriodo, cuotasConPendientes, estadoCuota, periodoLabel } from '../../lib/rules';
+import { ESTADO_CUOTA_LABEL, clasesDelPeriodo, cuotasConPendientesHasta, estadoCuota, periodoLabel } from '../../lib/rules';
 import { useCurrentUser } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
 
@@ -18,7 +18,7 @@ export default function SocioHome() {
 
   const usadas = clasesDelPeriodo(socio.id, inscripciones);
   const limite = plan?.clasesPorPeriodo ?? null;
-  const propias = cuotasConPendientes(cuotas, [socio], plan ? [plan] : [], PERIODO_ACTUAL).filter((c) => c.idSocio === socio.id);
+  const propias = cuotasConPendientesHasta(cuotas, [socio], plan ? [plan] : []).filter((c) => c.idSocio === socio.id);
   const actual = propias.find((c) => c.periodo === PERIODO_ACTUAL);
   const mora = propias.filter((c) => estadoCuota(c) === 'vencida');
   const proxima = inscripciones

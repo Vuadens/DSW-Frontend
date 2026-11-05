@@ -149,7 +149,7 @@ export default function ClasesAdminPage() {
         type: 'select',
         options: [
           { value: '', label: 'Elegí un profesor' },
-          ...toOptions(profesores, (p) => fullName(p.nombre, p.apellido)),
+          ...toOptions(profesores.filter((p) => !p.fechaBaja), (p) => fullName(p.nombre, p.apellido)),
         ],
       },
     ],

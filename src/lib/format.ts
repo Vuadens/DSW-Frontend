@@ -6,10 +6,20 @@ export const isoLocal = (date: Date) =>
 
 /**
  * Fecha "de hoy". En modo demo es fija, para que los datos sembrados sean coherentes;
- * en modo conectado es la fecha real.
+ * en modo conectado es la fecha real y se actualiza con actualizarHoy() al cambiar el día.
  */
-export const TODAY = API_ENABLED ? isoLocal(new Date()) : '2026-10-11';
-export const PERIODO_ACTUAL = TODAY.slice(0, 7);
+export let TODAY = API_ENABLED ? isoLocal(new Date()) : '2026-10-11';
+export let PERIODO_ACTUAL = TODAY.slice(0, 7);
+
+/** Si cambió el día (por ejemplo, con la pestaña abierta de un día para otro), actualiza TODAY y devuelve true. */
+export const actualizarHoy = () => {
+  if (!API_ENABLED) return false;
+  const hoy = isoLocal(new Date());
+  if (hoy === TODAY) return false;
+  TODAY = hoy;
+  PERIODO_ACTUAL = hoy.slice(0, 7);
+  return true;
+};
 export const ADICIONAL_CLASES = 0.05;
 
 export const fmt = (n: number) => '$\u00a0' + Math.round(n).toLocaleString('es-AR');
@@ -29,10 +39,28 @@ const MESES = [
   'diciembre',
 ];
 
+/** Día del mes en que vence la cuota de ese mes; desde el día siguiente queda en mora. */
+export const DIA_VENCIMIENTO = 10;
+
+/** "2026-10" → "2026-10-10". */
+export const vencimientoCuota = (periodo: string) => `${periodo}-${String(DIA_VENCIMIENTO).padStart(2, '0')}`;
+
+/** "2026-12" → "2027-01". */
+export const periodoSiguiente = (periodo: string) => {
+  const [y, m] = periodo.split('-').map(Number);
+  return isoLocal(new Date(y, m, 1)).slice(0, 7);
+};
+
 /** "2026-10" → "2026-10-31". */
 export const finDeMes = (periodo: string) => {
   const [y, m] = periodo.split('-').map(Number);
   return isoLocal(new Date(y, m, 0));
+};
+
+/** Primer día del mes siguiente al actual, "AAAA-MM-DD". */
+export const primerDiaMesSiguiente = () => {
+  const [y, m] = PERIODO_ACTUAL.split('-').map(Number);
+  return isoLocal(new Date(y, m, 1));
 };
 
 export const longDate = (iso: string) => {
@@ -81,6 +109,9 @@ export const claseFecha = (dia: DiaSemana) => {
 };
 
 export const diaNumero = (dia: DiaSemana) => Number(claseFecha(dia).slice(8, 10));
+
+/** "2026-11-06" → "noviembre". */
+export const mesDe = (iso: string) => MESES[Number(iso.slice(5, 7)) - 1];
 
 export const diaLabel = (dia: DiaSemana) => `${dia} ${diaNumero(dia)}`;
 

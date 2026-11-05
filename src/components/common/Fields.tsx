@@ -16,8 +16,13 @@ export interface FieldDef {
   /** Texto que aclara el campo, por ejemplo qué significa dejarlo vacío. */
   hint?: string;
   step?: string;
+  /** Rango de una fecha ("AAAA-MM-DD"). Sin max, el año queda limitado a 4 cifras. */
+  min?: string;
+  max?: string;
   autoComplete?: string;
 }
+
+const FECHA_MAXIMA = '9999-12-31';
 
 interface Props {
   fields: FieldDef[];
@@ -99,6 +104,8 @@ export function Fields({ fields, register, control, errors }: Props) {
                 id={id}
                 type={field.type}
                 step={field.step}
+                min={field.min}
+                max={field.type === 'date' ? (field.max ?? FECHA_MAXIMA) : field.max}
                 inputMode={field.type === 'number' ? 'decimal' : undefined}
                 autoComplete={field.autoComplete}
                 placeholder={field.placeholder}

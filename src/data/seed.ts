@@ -74,6 +74,8 @@ export const seedSocios = (): Socio[] =>
     fechaAlta,
     fechaBaja: '',
     idPlan,
+    planProximoId: null,
+    planProximoDesde: '',
   }));
 
 export const seedProfesores = (): Profesor[] =>
@@ -95,6 +97,7 @@ export const seedProfesores = (): Profesor[] =>
     telefono,
     fechaNac: '1990-01-01',
     sueldos: [...sueldos],
+    fechaBaja: '',
   }));
 
 export const seedActividades = (): Actividad[] =>

@@ -7,11 +7,12 @@ import { turnosService } from './turnos.service';
 interface ProfesorDto {
   idPersona: number;
   cargo: string;
+  fechaBaja: string | null;
   persona: PersonaDto;
   turnos: { idTurno: number }[];
 }
 
-type ProfesorInput = Omit<Profesor, 'id'>;
+type ProfesorInput = Omit<Profesor, 'id' | 'fechaBaja'>;
 
 /** El sueldo todavía no existe en el backend (HistoricoSueldo): se conserva lo local. */
 const fromDto = (dto: ProfesorDto, local?: Partial<Profesor>): Profesor => ({
@@ -25,6 +26,7 @@ const fromDto = (dto: ProfesorDto, local?: Partial<Profesor>): Profesor => ({
   cargo: dto.cargo,
   turnos: dto.turnos.map((t) => t.idTurno),
   sueldos: local?.sueldos ?? [],
+  fechaBaja: dateOnly(dto.fechaBaja),
 });
 
 const toDto = (profesor: ProfesorInput) => ({ ...personaToDto(profesor), email: profesor.email, cargo: profesor.cargo });
@@ -48,7 +50,9 @@ export const profesoresService = {
     const actualizado = fromDto((await httpClient.patch<ProfesorDto>(`/profesores/${id}`, toDto(profesor))).data, profesor);
     return { ...actualizado, turnos: await sincronizarTurnos(id, actualizado.turnos, profesor.turnos) };
   },
-  remove: async (id: number) => {
-    await httpClient.delete(`/profesores/${id}`);
-  },
+  /** Baja lógica: el backend registra la fecha, le quita los turnos y desactiva su cuenta. */
+  darDeBaja: async (id: number, local?: Partial<Profesor>) =>
+    fromDto((await httpClient.delete<ProfesorDto>(`/profesores/${id}`)).data, local),
+  reactivar: async (id: number, local?: Partial<Profesor>) =>
+    fromDto((await httpClient.patch<ProfesorDto>(`/profesores/${id}/reactivar`)).data, local),
 };

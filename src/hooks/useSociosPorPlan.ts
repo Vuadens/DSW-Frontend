@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { API_ENABLED, apiErrorMessage } from '../api/httpClient';
 import { sociosService, type EstadoCuotaSocio } from '../api/socios.service';
-import { PERIODO_ACTUAL } from '../lib/format';
+import { estadoCuotasSocio } from '../lib/rules';
 import { useDataStore } from '../stores/dataStore';
 
 export interface SocioListado {
@@ -39,17 +39,16 @@ export function useSociosPorPlan(planId: number | null, conEstado: boolean) {
   if (planId === null) return { socios: [] as SocioListado[], error: undefined };
   if (API_ENABLED) return { socios: remotos ?? [], error };
 
+  // Sin estado de cuota es el listado del profesor, que no ve a los socios dados de baja (como el backend).
   const locales = socios
-    .filter((s) => s.idPlan === planId)
+    .filter((s) => s.idPlan === planId && (conEstado || !s.fechaBaja))
     .map(({ id, dni, nombre, apellido }) => {
-      const pago = cuotas.some((c) => c.idSocio === id && c.periodo === PERIODO_ACTUAL && c.fechaPago);
-      const estadoCuota: EstadoCuotaSocio | undefined = conEstado ? (pago ? 'AL_DIA' : 'ADEUDA') : undefined;
+      const estadoCuota: EstadoCuotaSocio | undefined = conEstado
+        ? estadoCuotasSocio(cuotas.filter((c) => c.idSocio === id))
+        : undefined;
       return { id, dni, nombre, apellido, estadoCuota };
     });
   return { socios: locales, error: undefined };
 }
 
-export const ESTADO_CUOTA_SOCIO_LABEL: Record<EstadoCuotaSocio, string> = {
-  AL_DIA: 'Cuota al día',
-  ADEUDA: 'Adeuda la cuota',
-};
+export { ESTADO_CUOTA_SOCIO_LABEL } from '../lib/rules';

@@ -1,8 +1,8 @@
 import { Paginacion, usePaginacion } from '../../components/common/Paginacion';
 import { PageHeader, Pill } from '../../components/common/Tile';
 import { MODULOS_DEMO } from '../../lib/features';
-import { PERIODO_ACTUAL, fmt, longDate } from '../../lib/format';
-import { ESTADO_CUOTA_LABEL, cuotasConPendientes, estadoCuota, periodoLabel } from '../../lib/rules';
+import { DIA_VENCIMIENTO, fmt, longDate } from '../../lib/format';
+import { ESTADO_CUOTA_LABEL, cuotasConPendientesHasta, estadoCuota, periodoLabel } from '../../lib/rules';
 import { useCurrentUser } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
 import { useUiStore } from '../../stores/uiStore';
@@ -15,14 +15,14 @@ export default function MisCuotasPage() {
   const pagarCuota = useDataStore((s) => s.pagarCuota);
   const showToast = useUiStore((s) => s.showToast);
 
-  const propias = cuotasConPendientes(cuotas, socios, planes, PERIODO_ACTUAL)
+  const propias = cuotasConPendientesHasta(cuotas, socios.filter((s) => s.id === user?.id), planes)
     .filter((c) => c.idSocio === user?.id)
     .sort((a, b) => b.fechaVencimiento.localeCompare(a.fechaVencimiento));
   const { visibles, paginacion } = usePaginacion(propias);
 
   return (
     <>
-      <PageHeader title="Mis cuotas" lede={MODULOS_DEMO ? 'Pagá online y descargá tu historial.' : 'Tus pagos y lo que adeudás del mes. Se abonan en recepción.'} />
+      <PageHeader title="Mis cuotas" lede={MODULOS_DEMO ? 'Pagá online y descargá tu historial.' : `Tus pagos y lo que adeudás. Vencen el día ${DIA_VENCIMIENTO} de cada mes y se abonan en recepción.`} />
       {propias.length === 0 ? (
         <p className="none">No tenés cuotas generadas.</p>
       ) : (

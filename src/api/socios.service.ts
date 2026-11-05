@@ -18,6 +18,8 @@ interface SocioDto {
   fechaAlta: string;
   fechaBaja: string | null;
   planId: number;
+  planProximoId: number | null;
+  planProximoDesde: string | null;
   persona: PersonaDto;
 }
 
@@ -34,6 +36,8 @@ const fromDto = (dto: SocioDto): Socio => ({
   fechaAlta: dateOnly(dto.fechaAlta),
   fechaBaja: dateOnly(dto.fechaBaja),
   idPlan: dto.planId,
+  planProximoId: dto.planProximoId ?? null,
+  planProximoDesde: dateOnly(dto.planProximoDesde),
 });
 
 export const personaToDto = (persona: PersonaDto) => ({
@@ -49,10 +53,9 @@ const toDto = (socio: SocioInput) => ({
   email: socio.email,
   planId: socio.idPlan ?? undefined,
   fechaAlta: socio.fechaAlta || undefined,
-  fechaBaja: socio.fechaBaja || null,
 });
 
-export type EstadoCuotaSocio = 'AL_DIA' | 'ADEUDA';
+export type EstadoCuotaSocio = 'AL_DIA' | 'PENDIENTE' | 'EN_MORA';
 
 interface SocioPorPlanDto {
   idPersona: number;
@@ -61,17 +64,19 @@ interface SocioPorPlanDto {
   estadoCuota?: EstadoCuotaSocio;
 }
 
+/** Las cuotas y su estado solo vienen para el administrador y el propio socio, no para el profesor. */
 interface SocioDetalleDto extends SocioDto {
   plan: { nombre: string };
-  cuotas: CuotaDto[];
-  estadoCuotas: { estado: EstadoCuotaSocio; ultimoMesPagado: string | null };
+  cuotas?: CuotaDto[];
+  estadoCuotas?: { estado: EstadoCuotaSocio; ultimoMesPagado: string | null };
 }
 
 export interface SocioDetalle {
   socio: Socio;
   plan: string;
   cuotas: Cuota[];
-  estadoCuota: EstadoCuotaSocio;
+  /** null cuando el backend no informa las cuotas (detalle pedido por un profesor). */
+  estadoCuota: EstadoCuotaSocio | null;
   /** Período "2026-10". */
   ultimoMesPagado: string | null;
 }
@@ -83,9 +88,9 @@ export const sociosService = {
     return {
       socio: fromDto(data),
       plan: data.plan.nombre,
-      cuotas: data.cuotas.map(cuotaFromDto),
-      estadoCuota: data.estadoCuotas.estado,
-      ultimoMesPagado: data.estadoCuotas.ultimoMesPagado?.slice(0, 7) ?? null,
+      cuotas: data.cuotas?.map(cuotaFromDto) ?? [],
+      estadoCuota: data.estadoCuotas?.estado ?? null,
+      ultimoMesPagado: data.estadoCuotas?.ultimoMesPagado?.slice(0, 7) ?? null,
     };
   },
   /** Listado de socios de un plan: nombre, apellido y DNI; el admin recibe además el estado de la cuota del mes. */
@@ -101,4 +106,11 @@ export const sociosService = {
   remove: async (id: number) => {
     await httpClient.delete(`/socios/${id}`);
   },
+  /** Baja lógica: sin fecha es de hoy. El socio solo puede darse de baja a sí mismo y con fecha de hoy. */
+  darDeBaja: async (id: number, fechaBaja?: string) =>
+    fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/baja`, fechaBaja ? { fechaBaja } : {})).data),
+  /** Plan que rige desde el mes siguiente; null cancela el cambio pendiente. */
+  cambiarPlan: async (id: number, planId: number | null) =>
+    fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/plan`, { planId })).data),
+  reactivar: async (id: number) => fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/reactivar`)).data),
 };

@@ -30,6 +30,9 @@ export interface Socio extends Persona {
   fechaAlta: string;
   fechaBaja: string;
   idPlan: number | null;
+  /** Plan elegido por el socio, que rige desde `planProximoDesde` ("AAAA-MM-DD"). */
+  planProximoId: number | null;
+  planProximoDesde: string;
 }
 
 export interface SueldoHistorico {
@@ -43,6 +46,8 @@ export interface Profesor extends Persona {
   turnos: number[];
   /** Sin backend todavía (HistoricoSueldo): solo modo demo. */
   sueldos: SueldoHistorico[];
+  /** Baja lógica: vacía si el profesor está activo. */
+  fechaBaja: string;
 }
 
 export interface Administrador {
