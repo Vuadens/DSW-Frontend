@@ -53,21 +53,25 @@ En este repositorio está el frontend. La API, la base de datos y el modelo de d
 
 **Ajustamos el frontend al modelo de dominio.** Cuando socios y profesores pasaron a heredar de Persona, actualizamos modelos, servicios y formularios, y quitamos los campos que ya no existían.
 
-**Cerramos el alcance de regularidad.** Por último sumamos el cobro de cuotas, el CRUD de planes y el detalle de socios y clases con datos pedidos al backend.
+**Cerramos el alcance de regularidad.** Después sumamos el cobro de cuotas, el CRUD de planes y el detalle de socios y clases con datos pedidos al backend.
+
+**Corregimos lo que encontramos al probar.** Pasamos a bajas lógicas de socios y profesores, sumamos la baja y el cambio de plan del propio socio, validamos la fecha de nacimiento y la edad mínima, y calculamos el vencimiento y la mora de las cuotas con la misma regla que el backend.
 
 ## Funcionalidades
 
 | Rol | Qué puede hacer |
 |---|---|
-| **Administrador** | Gestionar socios, profesores, planes, actividades, clases y turnos. Inscribir socios, registrar cobros y consultar lo cobrado y adeudado por mes. |
-| **Profesor** | Ver su agenda, actualizar sus datos y consultar los socios de cada plan, sin acceder al estado de sus cuotas. |
-| **Socio** | Reservar y cancelar clases, y consultar sus reservas, sus cuotas y sus datos. |
+| **Administrador** | Gestionar socios, profesores, planes, actividades, clases y turnos. Dar de baja y reactivar socios y profesores. Inscribir socios, registrar cobros y consultar lo cobrado, lo pendiente y la mora por mes. |
+| **Profesor** | Ver su agenda, actualizar sus datos y consultar los socios activos de cada plan, sin acceder al estado de sus cuotas. |
+| **Socio** | Reservar y cancelar clases, consultar sus reservas, sus cuotas y sus datos, cambiar de plan desde el mes siguiente y darse de baja. |
 
 Además, incorporamos:
 
 - Inicio de sesión con email o DNI, y sesión recuperada al recargar la página.
 - Contraseña inicial con cambio obligatorio en el primer ingreso.
-- Reservas validadas por cupo, plan y estado de la cuota.
+- Reservas validadas por cupo, plan y cuotas en mora. Las cuotas vencen el día 10 de cada mes.
+- Bajas lógicas: un socio o profesor dado de baja pierde el acceso en el momento.
+- Fecha de nacimiento validada: el socio tiene que tener al menos 14 años y el profesor al menos 18.
 - Listados filtrables por día o por plan, con detalle obtenido del backend.
 - Tema claro, oscuro o automático.
 - Diseño adaptable a celular, tablet y escritorio.
@@ -177,7 +181,8 @@ Mantuvimos dos modos para poder mostrar la interfaz completa sin instalar nada y
 | **`VITE_API_URL`** | Vacía | URL del backend |
 | **Datos** | En memoria; se pierden al recargar | Los de la base, por medio de la API |
 | **Inicio de sesión** | Local | JWT; un error 401 cierra la sesión |
-| **Fecha actual** | Fija en 11 de octubre de 2026 | La real |
+| **Fecha actual** | Fija en 11 de octubre de 2026 | La real; se actualiza sola al cambiar el día |
+| **Cambio de plan** | Queda programado, pero no se aplica | Lo aplica el backend al empezar el mes |
 | **Módulos sin backend** | Finanzas, máquinas, materiales, recuperar clave, foto de perfil, sueldos y clases por período | Ocultos |
 
 La [demo publicada](https://dsw-frontend-sand.vercel.app) corre en modo demo.
@@ -200,7 +205,9 @@ Las cuentas son las del seed del backend, con la contraseña `DEMO_PASSWORD`, qu
 |---|---|---|
 | Profesor | `marcos.benitez@hadesgym.com` | `28450111` |
 | Socio al día | `lucas.fernandez@gmail.com` | `38450192` |
-| Socio con cuota pendiente | `ignacio.sosa@outlook.com` | `36980112` |
+| Socio que adeuda la cuota del mes | `ignacio.sosa@outlook.com` | `36980112` |
+
+Si el seed del backend se corrió después del día 10, Ignacio todavía no debe nada: su primera cuota es la del mes siguiente. Los detalles están en los [datos de demo del backend](https://github.com/Vuadens/DSW-Backend#datos-de-demo).
 
 ## Scripts
 
@@ -237,6 +244,7 @@ src/
 | `No pudimos conectar con el servidor` | Confirmá que el backend esté activo y que el puerto coincida con `PORT` |
 | Las cuentas de prueba no ingresan | Corré el seed del backend sobre una base sin planes |
 | `Port 5173 is in use` | Cerrá el otro proceso o entrá a la URL que indica la terminal |
+| La sesión se cierra sola después de recrear la base del backend | El token guardado es de un usuario que ya no existe: volvé a ingresar |
 
 ## Equipo
 
