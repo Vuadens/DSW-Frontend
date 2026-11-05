@@ -4,29 +4,91 @@ import { Link } from 'react-router-dom';
 import { fmt } from '../../lib/format';
 import { estadoCuota } from '../../lib/rules';
 import { z } from 'zod';
+import { Dialog } from '../../components/common/Dialog';
 import { EntityPage } from '../../components/common/EntityPage';
 import type { FieldDef } from '../../components/common/Fields';
 import { SocioDetalleDialog } from '../../components/common/SocioDetalleDialog';
 import { Pill } from '../../components/common/Tile';
 import { TODAY, fullName } from '../../lib/format';
 import { MODULOS_DEMO } from '../../lib/features';
-import { asSchema, date, email, optionalDate, persona, str, toId, toOptions } from '../../lib/forms';
+import { asSchema, date, email, persona, str, toId, toOptions } from '../../lib/forms';
 import type { Socio } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
+import { useUiStore } from '../../stores/uiStore';
 
+// La baja y la reactivación tienen sus propias acciones: no se editan desde el formulario.
 const schema = asSchema(
   z.object({
     ...persona,
     email,
     fechaAlta: date,
-    fechaBaja: optionalDate,
     idPlan: z.string().min(1, 'Elegí un plan'),
   }),
 );
 
+/** Baja lógica con la fecha de hoy por defecto; no admite fechas futuras ni anteriores al alta. */
+function BajaDialog({ socio, onClose }: { socio: Socio | null; onClose: () => void }) {
+  const darDeBaja = useDataStore((s) => s.darDeBajaSocio);
+  const showToast = useUiStore((s) => s.showToast);
+  const [fecha, setFecha] = useState(TODAY);
+  const [error, setError] = useState('');
+
+  if (!socio) return null;
+
+  const confirmar = async () => {
+    if (!fecha) return setError('Elegí una fecha.');
+    if (fecha > TODAY) return setError('La fecha de baja no puede ser futura.');
+    if (fecha < socio.fechaAlta) return setError('La fecha de baja no puede ser anterior al alta.');
+    const result = await darDeBaja(socio.id, fecha);
+    if (result.error) return setError(result.error);
+    showToast('Socio dado de baja.');
+    onClose();
+  };
+
+  return (
+    <Dialog open onClose={onClose} variant="modal" label="Dar de baja al socio">
+      <h2>Dar de baja a {fullName(socio.nombre, socio.apellido)}</h2>
+      <p className="lede" style={{ marginTop: 0 }}>
+        Pierde el acceso al sistema y se cancelan sus reservas de hoy en adelante. Podés reactivarlo después.
+      </p>
+      <div className="fld">
+        <label htmlFor="fecha-baja">Fecha de baja</label>
+        <input
+          id="fecha-baja"
+          type="date"
+          min={socio.fechaAlta}
+          max={TODAY}
+          value={fecha}
+          aria-invalid={Boolean(error)}
+          onChange={(event) => {
+            setFecha(event.target.value);
+            setError('');
+          }}
+        />
+        {error && (
+          <span className="fld-err" role="alert">
+            {error}
+          </span>
+        )}
+      </div>
+      <div className="acts">
+        <button type="button" className="btn line sm" onClick={onClose}>
+          Cancelar
+        </button>
+        <button type="button" className="btn sm" onClick={confirmar}>
+          Dar de baja
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
 export default function SociosPage() {
   const socios = useDataStore((s) => s.socios);
   const planes = useDataStore((s) => s.planes);
+  const reactivar = useDataStore((s) => s.reactivarSocio);
+  const showToast = useUiStore((s) => s.showToast);
+  const [dandoDeBaja, setDandoDeBaja] = useState<Socio | null>(null);
   // Listado por plan: nombre, apellido, DNI y, para el admin, el estado de la cuota del mes.
   const [planFiltro, setPlanFiltro] = useState<number | null>(null);
   const porPlan = useSociosPorPlan(planFiltro, true);
@@ -45,7 +107,6 @@ export default function SociosPage() {
       { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date' },
       { name: 'email', label: 'Email', type: 'email', autoComplete: 'off', hint: 'Con él ingresa al sistema. La contraseña inicial son los últimos 6 dígitos del DNI.' },
       { name: 'fechaAlta', label: 'Fecha de alta', type: 'date' },
-      { name: 'fechaBaja', label: 'Fecha de baja', type: 'date', hint: 'Dejala vacía si el socio sigue activo.' },
       {
         name: 'idPlan',
         label: 'Plan',
@@ -91,7 +152,6 @@ export default function SociosPage() {
         fechaNac: str(s?.fechaNac),
         email: str(s?.email),
         fechaAlta: s?.fechaAlta ?? TODAY,
-        fechaBaja: str(s?.fechaBaja),
         idPlan: str(s?.idPlan),
       })}
       fromForm={(v, existing) => ({
@@ -103,7 +163,7 @@ export default function SociosPage() {
         telefono: v.telefono.trim(),
         fechaNac: v.fechaNac,
         fechaAlta: v.fechaAlta,
-        fechaBaja: v.fechaBaja,
+        fechaBaja: existing?.fechaBaja ?? '',
         idPlan: toId(v.idPlan),
       })}
       renderActions={(s) => {
@@ -113,6 +173,22 @@ export default function SociosPage() {
             <button type="button" className="btn line sm" onClick={() => setDetalleId(s.id)}>
               Detalle
             </button>
+            {s.fechaBaja ? (
+              <button
+                type="button"
+                className="btn line sm"
+                onClick={async () => {
+                  const result = await reactivar(s.id);
+                  showToast(result.error ?? 'Socio reactivado.');
+                }}
+              >
+                Reactivar
+              </button>
+            ) : (
+              <button type="button" className="btn line sm" onClick={() => setDandoDeBaja(s)}>
+                Dar de baja
+              </button>
+            )}
             {MODULOS_DEMO && <Link className="btn line sm" to={`/app/finanzas?socio=${s.id}`}>{balance ? `Cuotas ${fmt(balance)}` : 'Cuotas al día'}</Link>}
           </>
         );
@@ -143,6 +219,7 @@ export default function SociosPage() {
       }}
     />
     <SocioDetalleDialog socioId={detalleId} conCuotas onClose={() => setDetalleId(null)} />
+    <BajaDialog key={dandoDeBaja?.id} socio={dandoDeBaja} onClose={() => setDandoDeBaja(null)} />
     </>
   );
 }

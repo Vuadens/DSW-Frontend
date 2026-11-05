@@ -49,7 +49,6 @@ const toDto = (socio: SocioInput) => ({
   email: socio.email,
   planId: socio.idPlan ?? undefined,
   fechaAlta: socio.fechaAlta || undefined,
-  fechaBaja: socio.fechaBaja || null,
 });
 
 export type EstadoCuotaSocio = 'AL_DIA' | 'ADEUDA';
@@ -101,4 +100,8 @@ export const sociosService = {
   remove: async (id: number) => {
     await httpClient.delete(`/socios/${id}`);
   },
+  /** Baja lógica: sin fecha es de hoy. El socio solo puede darse de baja a sí mismo y con fecha de hoy. */
+  darDeBaja: async (id: number, fechaBaja?: string) =>
+    fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/baja`, fechaBaja ? { fechaBaja } : {})).data),
+  reactivar: async (id: number) => fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/reactivar`)).data),
 };

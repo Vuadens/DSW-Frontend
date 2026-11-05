@@ -130,6 +130,9 @@ interface DataState extends Collections {
   /** Baja lógica del profesor: no puede tener clases asignadas y se le quitan los turnos. */
   darDeBajaProfesor: (id: number) => Promise<Result>;
   reactivarProfesor: (id: number) => Promise<Result>;
+  /** Baja lógica del socio: pierde el acceso y se cancelan sus reservas de hoy en adelante. */
+  darDeBajaSocio: (id: number, fechaBaja?: string) => Promise<Result>;
+  reactivarSocio: (id: number) => Promise<Result>;
   /** Borrado físico de una inscripción (solo admin). */
   eliminarInscripcion: (inscripcionId: number) => Promise<Result>;
   /** En modo conectado registra el cobro en el backend, que no guarda el método de pago. */
@@ -248,6 +251,51 @@ export const useDataStore = create<DataState>((set, get) => ({
       }
     }
     set((state) => ({ profesores: state.profesores.map((p) => (p.id === id ? actualizado : p)) }));
+    return {};
+  },
+
+  darDeBajaSocio: async (id, fechaBaja = TODAY) => {
+    const actual = get().socios.find((s) => s.id === id);
+    if (!actual) return { error: 'No encontramos al socio.' };
+    if (API_ENABLED) {
+      try {
+        const socio = await sociosService.darDeBaja(id, fechaBaja);
+        set((state) => ({ socios: state.socios.map((s) => (s.id === id ? socio : s)) }));
+      } catch (error) {
+        return { error: apiErrorMessage(error) };
+      }
+      // El backend canceló sus reservas: se recarga la ocupación. Si el socio se dio de baja
+      // a sí mismo ya no tiene acceso y la recarga falla, pero la baja quedó hecha.
+      try {
+        const [clases, inscripciones] = await Promise.all([clasesService.list(), inscripcionesService.list()]);
+        set({ clases, inscripciones });
+      } catch {
+        // Sin acceso no hay nada que recargar.
+      }
+      return {};
+    }
+    set((state) => ({
+      socios: state.socios.map((s) => (s.id === id ? { ...s, fechaBaja } : s)),
+      inscripciones: state.inscripciones.map((i) =>
+        i.idSocio === id && i.estado === 'Confirmada' && i.fechaClase >= TODAY ? { ...i, estado: 'Cancelada' } : i,
+      ),
+    }));
+    return {};
+  },
+
+  reactivarSocio: async (id) => {
+    let socio = get().socios.find((s) => s.id === id);
+    if (!socio) return { error: 'No encontramos al socio.' };
+    socio = { ...socio, fechaBaja: '' };
+    if (API_ENABLED) {
+      try {
+        socio = await sociosService.reactivar(id);
+      } catch (error) {
+        return { error: apiErrorMessage(error) };
+      }
+    }
+    const reactivado = socio;
+    set((state) => ({ socios: state.socios.map((s) => (s.id === id ? reactivado : s)) }));
     return {};
   },
 

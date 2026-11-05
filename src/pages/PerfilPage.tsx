@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { ConfirmDialog } from '../components/common/Dialog';
 import { FormDrawer } from '../components/common/FormDrawer';
 import type { FieldDef } from '../components/common/Fields';
 import { Avatar } from '../components/common/Avatar';
@@ -20,8 +22,13 @@ export default function PerfilPage() {
   const plan = useDataStore((s) => user?.role === 'socio' ? s.planes.find((p) => p.id === s.socios.find((member) => member.id === user.id)?.idPlan) : undefined);
   const showToast = useUiStore((s) => s.showToast);
   const save = useDataStore((s) => s.save);
+  const darDeBaja = useDataStore((s) => s.darDeBajaSocio);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
   const [photoOpen, setPhotoOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [bajaOpen, setBajaOpen] = useState(false);
+  const [bajaError, setBajaError] = useState<string>();
   if (!user) return null;
   const photo = photos[photoKey(user.role, user.id)];
   const name = fullName(user.nombre, user.apellido);
@@ -56,9 +63,23 @@ export default function PerfilPage() {
           {puedeEditar && <button type="button" className="btn sm" onClick={() => setEditOpen(true)}>Editar mis datos</button>}
           {MODULOS_DEMO && <button type="button" className="btn line sm" onClick={() => setPhotoOpen(true)}>{photo ? 'Cambiar foto' : 'Subir foto'}</button>}
           {MODULOS_DEMO && photo && <button type="button" className="btn line sm" onClick={async () => { await removePhoto(); showToast('Foto eliminada.'); }}>Quitar foto</button>}
+          {user.role === 'socio' && <button type="button" className="btn line sm" onClick={() => { setBajaError(undefined); setBajaOpen(true); }}>Darme de baja del gimnasio</button>}
         </div>
       </div>
     </section>
+    <ConfirmDialog
+      open={bajaOpen}
+      title="Darte de baja del gimnasio"
+      message={bajaError ?? 'Tu baja queda registrada con fecha de hoy, se cancelan tus reservas y perdés el acceso al sistema. Para volver, acercate a recepción.'}
+      confirmLabel={bajaError ? 'Reintentar' : 'Darme de baja'}
+      onCancel={() => setBajaOpen(false)}
+      onConfirm={async () => {
+        const result = await darDeBaja(user.id);
+        if (result.error) return setBajaError(result.error);
+        logout();
+        navigate('/ingresar', { replace: true, state: { aviso: 'Te diste de baja del gimnasio.' } });
+      }}
+    />
     <PhotoModal open={photoOpen} hasPhoto={Boolean(photo)} onClose={() => setPhotoOpen(false)} />
     <FormDrawer
       open={editOpen}
