@@ -21,7 +21,7 @@ import { turnosService } from '../api/turnos.service';
 import { clasesService } from '../api/clases.service';
 import { cuotasService } from '../api/cuotas.service';
 import { inscripcionesService } from '../api/inscripciones.service';
-import { PERIODO_ACTUAL, TODAY, claseFecha, nextId } from '../lib/format';
+import { PERIODO_ACTUAL, TODAY, claseFecha, nextId, primerDiaMesSiguiente } from '../lib/format';
 import { adicionalPorClase, clasesDelPeriodo, puedeReservar } from '../lib/rules';
 import type {
   Actividad,
@@ -133,6 +133,8 @@ interface DataState extends Collections {
   /** Baja lógica del socio: pierde el acceso y se cancelan sus reservas de hoy en adelante. */
   darDeBajaSocio: (id: number, fechaBaja?: string) => Promise<Result>;
   reactivarSocio: (id: number) => Promise<Result>;
+  /** El socio elige el plan que rige desde el mes siguiente; null cancela el cambio. */
+  cambiarPlan: (id: number, planId: number | null) => Promise<Result>;
   /** Borrado físico de una inscripción (solo admin). */
   eliminarInscripcion: (inscripcionId: number) => Promise<Result>;
   /** En modo conectado registra el cobro en el backend, que no guarda el método de pago. */
@@ -296,6 +298,22 @@ export const useDataStore = create<DataState>((set, get) => ({
     }
     const reactivado = socio;
     set((state) => ({ socios: state.socios.map((s) => (s.id === id ? reactivado : s)) }));
+    return {};
+  },
+
+  cambiarPlan: async (id, planId) => {
+    let socio = get().socios.find((s) => s.id === id);
+    if (!socio) return { error: 'No encontramos al socio.' };
+    socio = { ...socio, planProximoId: planId, planProximoDesde: planId === null ? '' : primerDiaMesSiguiente() };
+    if (API_ENABLED) {
+      try {
+        socio = await sociosService.cambiarPlan(id, planId);
+      } catch (error) {
+        return { error: apiErrorMessage(error) };
+      }
+    }
+    const actualizado = socio;
+    set((state) => ({ socios: state.socios.map((s) => (s.id === id ? actualizado : s)) }));
     return {};
   },
 

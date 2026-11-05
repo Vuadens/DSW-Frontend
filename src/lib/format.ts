@@ -35,6 +35,12 @@ export const finDeMes = (periodo: string) => {
   return isoLocal(new Date(y, m, 0));
 };
 
+/** Primer día del mes siguiente al actual, "AAAA-MM-DD". */
+export const primerDiaMesSiguiente = () => {
+  const [y, m] = PERIODO_ACTUAL.split('-').map(Number);
+  return isoLocal(new Date(y, m, 1));
+};
+
 export const longDate = (iso: string) => {
   const [y, m, d] = iso.split('-');
   return `${Number(d)} de ${MESES[Number(m) - 1]} de ${y}`;

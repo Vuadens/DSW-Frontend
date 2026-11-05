@@ -18,6 +18,8 @@ interface SocioDto {
   fechaAlta: string;
   fechaBaja: string | null;
   planId: number;
+  planProximoId: number | null;
+  planProximoDesde: string | null;
   persona: PersonaDto;
 }
 
@@ -34,6 +36,8 @@ const fromDto = (dto: SocioDto): Socio => ({
   fechaAlta: dateOnly(dto.fechaAlta),
   fechaBaja: dateOnly(dto.fechaBaja),
   idPlan: dto.planId,
+  planProximoId: dto.planProximoId ?? null,
+  planProximoDesde: dateOnly(dto.planProximoDesde),
 });
 
 export const personaToDto = (persona: PersonaDto) => ({
@@ -103,5 +107,8 @@ export const sociosService = {
   /** Baja lógica: sin fecha es de hoy. El socio solo puede darse de baja a sí mismo y con fecha de hoy. */
   darDeBaja: async (id: number, fechaBaja?: string) =>
     fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/baja`, fechaBaja ? { fechaBaja } : {})).data),
+  /** Plan que rige desde el mes siguiente; null cancela el cambio pendiente. */
+  cambiarPlan: async (id: number, planId: number | null) =>
+    fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/plan`, { planId })).data),
   reactivar: async (id: number) => fromDto((await httpClient.patch<SocioDto>(`/socios/${id}/reactivar`)).data),
 };

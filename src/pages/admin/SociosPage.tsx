@@ -166,6 +166,8 @@ export default function SociosPage() {
         fechaAlta: v.fechaAlta,
         fechaBaja: existing?.fechaBaja ?? '',
         idPlan: toId(v.idPlan),
+        planProximoId: existing?.planProximoId ?? null,
+        planProximoDesde: existing?.planProximoDesde ?? '',
       })}
       renderActions={(s) => {
         const balance = useDataStore.getState().cuotas.filter((c) => c.idSocio === s.id && estadoCuota(c) !== 'pagada').reduce((sum, c) => sum + c.valor, 0);

@@ -74,6 +74,8 @@ export const seedSocios = (): Socio[] =>
     fechaAlta,
     fechaBaja: '',
     idPlan,
+    planProximoId: null,
+    planProximoDesde: '',
   }));
 
 export const seedProfesores = (): Profesor[] =>

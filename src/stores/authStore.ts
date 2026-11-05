@@ -148,7 +148,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return 'Ya existe una cuenta con ese correo.';
     }
     if (data.socios.some((s) => s.dni === input.dni.trim())) return 'Ya existe una cuenta con ese DNI.';
-    const result = await data.save('socios', { ...input, fechaAlta: TODAY, fechaBaja: '' });
+    const result = await data.save('socios', { ...input, fechaAlta: TODAY, fechaBaja: '', planProximoId: null, planProximoDesde: '' });
     return result.error ?? null;
   },
 
