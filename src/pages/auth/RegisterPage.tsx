@@ -8,12 +8,14 @@ import { API_ENABLED, apiErrorMessage } from '../../api/httpClient';
 import { planesService } from '../../api/planes.service';
 import { Fields, type FieldDef } from '../../components/common/Fields';
 import { fmt } from '../../lib/format';
-import { asSchema, email, persona, toOptions } from '../../lib/forms';
+import { EDAD_MINIMA_SOCIO, FECHA_NAC_MINIMA, asSchema, email, fechaNacMaxima, fechaNacimiento, persona, toOptions } from '../../lib/forms';
 import type { Plan } from '../../models';
 import { useAuthStore } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
 
-const schema = asSchema(z.object({ ...persona, email, idPlan: z.string().min(1, 'Elegí un plan') }));
+const schema = asSchema(
+  z.object({ ...persona, fechaNac: fechaNacimiento(EDAD_MINIMA_SOCIO), email, idPlan: z.string().min(1, 'Elegí un plan') }),
+);
 
 const defaultValues = { nombre: '', apellido: '', dni: '', telefono: '', fechaNac: '', email: '', idPlan: '' };
 
@@ -46,7 +48,15 @@ export default function RegisterPage() {
       { name: 'apellido', label: 'Apellido', type: 'text', autoComplete: 'family-name' },
       { name: 'dni', label: 'DNI', type: 'text', hint: 'Solo números. Los últimos 6 dígitos son tu contraseña inicial.' },
       { name: 'telefono', label: 'Teléfono', type: 'text', autoComplete: 'tel' },
-      { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date', autoComplete: 'bday' },
+      {
+        name: 'fechaNac',
+        label: 'Fecha de nacimiento',
+        type: 'date',
+        autoComplete: 'bday',
+        min: FECHA_NAC_MINIMA,
+        max: fechaNacMaxima(EDAD_MINIMA_SOCIO),
+        hint: `Tenés que tener al menos ${EDAD_MINIMA_SOCIO} años.`,
+      },
       { name: 'email', label: 'Correo electrónico', type: 'email', autoComplete: 'email' },
       {
         name: 'idPlan',

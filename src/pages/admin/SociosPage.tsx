@@ -11,7 +11,7 @@ import { SocioDetalleDialog } from '../../components/common/SocioDetalleDialog';
 import { Pill } from '../../components/common/Tile';
 import { TODAY, fullName } from '../../lib/format';
 import { MODULOS_DEMO } from '../../lib/features';
-import { asSchema, date, email, persona, str, toId, toOptions } from '../../lib/forms';
+import { EDAD_MINIMA_SOCIO, FECHA_NAC_MINIMA, asSchema, date, email, fechaNacMaxima, fechaNacimiento, persona, str, toId, toOptions } from '../../lib/forms';
 import type { Socio } from '../../models';
 import { useDataStore } from '../../stores/dataStore';
 import { useUiStore } from '../../stores/uiStore';
@@ -20,6 +20,7 @@ import { useUiStore } from '../../stores/uiStore';
 const schema = asSchema(
   z.object({
     ...persona,
+    fechaNac: fechaNacimiento(EDAD_MINIMA_SOCIO),
     email,
     fechaAlta: date,
     idPlan: z.string().min(1, 'Elegí un plan'),
@@ -104,7 +105,7 @@ export default function SociosPage() {
       { name: 'apellido', label: 'Apellido', type: 'text', autoComplete: 'off' },
       { name: 'dni', label: 'DNI', type: 'text' },
       { name: 'telefono', label: 'Teléfono', type: 'text' },
-      { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date' },
+      { name: 'fechaNac', label: 'Fecha de nacimiento', type: 'date', min: FECHA_NAC_MINIMA, max: fechaNacMaxima(EDAD_MINIMA_SOCIO), hint: `Tiene que tener al menos ${EDAD_MINIMA_SOCIO} años.` },
       { name: 'email', label: 'Email', type: 'email', autoComplete: 'off', hint: 'Con él ingresa al sistema. La contraseña inicial son los últimos 6 dígitos del DNI.' },
       { name: 'fechaAlta', label: 'Fecha de alta', type: 'date' },
       {
