@@ -39,8 +39,9 @@ export function useSociosPorPlan(planId: number | null, conEstado: boolean) {
   if (planId === null) return { socios: [] as SocioListado[], error: undefined };
   if (API_ENABLED) return { socios: remotos ?? [], error };
 
+  // Sin estado de cuota es el listado del profesor, que no ve a los socios dados de baja (como el backend).
   const locales = socios
-    .filter((s) => s.idPlan === planId)
+    .filter((s) => s.idPlan === planId && (conEstado || !s.fechaBaja))
     .map(({ id, dni, nombre, apellido }) => {
       const estadoCuota: EstadoCuotaSocio | undefined = conEstado
         ? estadoCuotasSocio(cuotas.filter((c) => c.idSocio === id))
